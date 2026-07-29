@@ -179,6 +179,7 @@ let LECT=load(CKEY,LECTURES_FALLBACK);
 let BOOKS=load(BKEY,BOOKS_FALLBACK);
 let LOGS=load(GKEY,[]);
 let state=load(LKEY,{}), examDate=localStorage.getItem(DKEY)||"", mode="lectures", curSubject=SUBJECTS[0], query="", curBook=null, curRound=1, sb=null, online=false;
+if(/mode=book/.test(location.search)||/^#books?$/.test(location.hash))mode="books";
 function load(k,d){try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
 function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 function key(s,n){return s+"|"+n}
