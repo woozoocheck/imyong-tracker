@@ -75,6 +75,18 @@ h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-.02em;cursor:pointer}
 .lvlrow .lb{width:52px;font-size:13.5px;font-weight:800}
 .lvlrow .bar{flex:1;margin-top:0;height:10px}
 .lvlrow .pc{width:104px;text-align:right;font-size:12px;color:var(--sub);font-weight:600}
+.ruler{position:relative;height:22px;margin-top:3px}
+.ruler .tick{position:absolute;top:0;width:1px;height:5px;background:var(--sub);opacity:.35}
+.ruler .tick.maj{height:9px;opacity:.65}
+.ruler .tlab{position:absolute;top:10px;font-size:10px;color:var(--sub);transform:translateX(-50%);white-space:nowrap}
+.ruler .tlab.end{transform:translateX(-100%)}
+.tocrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tocrow:last-child{border-bottom:0}
+.tocdot{width:12px;height:12px;border-radius:3px;flex:none}
+.toct{flex:1;font-weight:600;line-height:1.3}
+.tocp{font-size:12px;color:var(--sub);white-space:nowrap}
+.tocb{font-size:11px;font-weight:800;color:var(--sub);background:var(--chip);padding:3px 8px;border-radius:6px;min-width:38px;text-align:center;flex:none}
+.tocb.done{color:#fff;background:var(--good)}.tocb.zero{opacity:.45}
 /* 책 상세 */
 .back{border:0;background:var(--chip);color:var(--ink);font-size:14px;font-weight:700;padding:9px 15px;border-radius:11px;cursor:pointer;margin-top:16px}
 .dethead{display:flex;gap:18px;margin-top:16px;align-items:flex-start}
@@ -220,6 +232,13 @@ function readStats(b){const n=b.total_pages||0;const cnt=pageCounts(b);let mx=0,
 function heatColor(c){return HEAT[Math.min(c,HEAT.length-1)]}
 function heatmap(b,cls,cols){const st=readStats(b);const n=st.n;if(!n)return `<div class="${cls}"></div>`;cols=Math.min(cols||120,n);const per=n/cols;let h=`<div class="${cls}">`;for(let i=0;i<cols;i++){const a=Math.floor(i*per)+1,z=Math.max(a,Math.floor((i+1)*per));let m=Infinity;for(let p=a;p<=z;p++)m=Math.min(m,st.cnt[p]||0);if(m===Infinity)m=0;h+=`<span style="background:${heatColor(m)}"></span>`}return h+"</div>"}
 function chapterFor(bid,from,to){const ch=CHAPTERS[bid];if(!ch||!ch.length)return"";const hit=[];for(let i=0;i<ch.length;i++){const s=ch[i].start,e=(i+1<ch.length?ch[i+1].start-1:1e9);if(s<=to&&e>=from)hit.push(ch[i].title)}if(!hit.length)return"";return hit.length<=2?hit.join(", "):hit[0]+" 외 "+(hit.length-1)+"개 장"}
+function heatRuler(b){const n=(b.total_pages||0);if(!n)return"";let t="";for(let p=10;p<n;p+=10){const left=p/n*100;const maj=(p%100===0);t+=`<span class="tick${maj?' maj':''}" style="left:${left}%"></span>`;if(maj)t+=`<span class="tlab" style="left:${left}%">${p}</span>`}t+=`<span class="tick maj" style="left:100%"></span><span class="tlab end" style="left:100%">${n}</span>`;return `<div class="ruler">${t}</div>`}
+function tocHTML(b){const ch=CHAPTERS[b.id];if(!ch||!ch.length)return `<div class="detbox"><div class="hd"><span>🗂 목차</span></div><div style="color:var(--sub);font-size:13px">목차 정보가 없어요.</div></div>`;
+  const st=readStats(b);const n=st.n;let rows="";
+  ch.forEach((c,i)=>{const s=c.start,e=(i+1<ch.length?ch[i+1].start-1:n);let mn=Infinity,cov=0,tot=0;for(let p=Math.max(1,s);p<=Math.min(n,e);p++){tot++;const v=st.cnt[p]||0;mn=Math.min(mn,v);if(v>=1)cov++}if(mn===Infinity){mn=0;tot=0}
+    const badge=tot&&mn>=1?`<span class="tocb done">✓${mn}번</span>`:(cov>0?`<span class="tocb">${Math.round(cov/Math.max(tot,1)*100)}%</span>`:`<span class="tocb zero">-</span>`);
+    rows+=`<div class="tocrow"><span class="tocdot" style="background:${heatColor(mn)}"></span><span class="toct">${esc(c.title)}</span><span class="tocp">p.${s}~${e}</span>${badge}</div>`});
+  return `<div class="detbox"><div class="hd"><span>🗂 목차</span><span class="sum" style="color:var(--sub);font-weight:600">${ch.length}개 장 · 색=읽은 횟수</span></div>${rows}</div>`}
 function coverCell(b,cls,ph){if(b.cover_url)return `<img class="${cls}" src="${esc(b.cover_url)}" onerror="this.outerHTML='<div class=\'${ph}\'>'+this.alt+'</div>'" alt="${esc(b.title)}">`;return `<div class="${ph}">${esc(b.title)}</div>`}
 
 function renderGrid(){
@@ -243,7 +262,7 @@ function renderDetail(b){
     <div class="dethead">${coverCell(b,'dcover','ph')}<div class="di"><b>${esc(b.title)}</b><span>${esc(b.author||'')}${b.publisher?' · '+esc(b.publisher):''}</span><span>총 ${b.total_pages||'?'}쪽</span></div></div>
     <div class="detbox">
       <div class="hd"><span>📊 페이지별 읽은 횟수</span><span class="sum">${doneMsg.startsWith('📗')?'완독 '+st.minc+'회':''}</span></div>
-      ${heatmap(b,'heat',130)}${legend}
+      ${heatmap(b,'heat',130)}${heatRuler(b)}${legend}
       <div style="margin-top:16px">${lvls}</div>
       <div style="margin-top:14px;font-weight:800;font-size:14px">${doneMsg}</div>
     </div>
@@ -255,7 +274,8 @@ function renderDetail(b){
       <div class="chappreview" id="chapPrev"></div>
       <button class="savebtn" id="saveLog">기록 저장</button>
     </div>
-    <div class="detbox"><div class="hd"><span>📚 읽은 기록</span></div>${hist}</div>`;
+    <div class="detbox"><div class="hd"><span>📚 읽은 기록</span></div>${hist}</div>
+    ${tocHTML(b)}`;
   d.querySelector("#backGrid").onclick=()=>{location.hash="#books"};
   d.querySelector("#saveLog").onclick=()=>saveLog(b);
   const upd=()=>{const f=parseInt(d.querySelector("#lgFrom").value),t=parseInt(d.querySelector("#lgTo").value);const ch=(f&&t&&t>=f)?chapterFor(b.id,f,t):"";d.querySelector("#chapPrev").textContent=ch?`📖 이 범위: ${ch}`:""};
