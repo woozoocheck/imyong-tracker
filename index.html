@@ -135,7 +135,10 @@ h1{font-size:26px;font-weight:800;margin:0;letter-spacing:-.02em;cursor:pointer}
 <div class="wrap">
   <header>
     <h1 id="homeTitle">📚 임용 진도판</h1>
-    <div class="syncdot"><span id="dot" class="dot"></span><span id="syncText">연결 중…</span></div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <a href="임용_일별캘린더.html" style="font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;background:var(--chip);padding:7px 12px;border-radius:999px;white-space:nowrap">📅 일별 스케줄</a>
+      <div class="syncdot"><span id="dot" class="dot"></span><span id="syncText">연결 중…</span></div>
+    </div>
   </header>
   <div class="hero">
     <div>
@@ -331,7 +334,7 @@ document.getElementById("cancelDate").onclick=()=>document.getElementById("dateM
 document.getElementById("saveDate").onclick=()=>{const v=document.getElementById("dateInput").value;if(v){examDate=v;localStorage.setItem(DKEY,v);pushExamDate(v);renderDday()}document.getElementById("dateModal").classList.remove("show")};
 document.getElementById("dateModal").onclick=e=>{if(e.target.id==="dateModal")document.getElementById("dateModal").classList.remove("show")};
 document.getElementById("search").addEventListener("input",e=>{query=e.target.value;renderLec()});
-document.getElementById("foot").innerHTML='강의는 맥 <b>임용강의 앱</b>으로 보고, 여기선 진도·독서를 기록해요. · 모든 기록은 자동 동기화됩니다.<br><a href="임용_일별캘린더.html" style="color:var(--brand);text-decoration:none;font-weight:700;display:inline-block;margin-top:10px;padding:8px 16px;border:1px solid var(--brand);border-radius:10px">📅 일별 스케줄 (체크·메모)</a>';
+document.getElementById("foot").innerHTML="강의는 맥 <b>임용강의 앱</b>으로 보고, 여기선 진도·독서를 기록해요. · 모든 기록은 자동 동기화됩니다.";
 route();initSB();setInterval(renderDday,3600000);checkUpdate();setInterval(checkUpdate,120000);
 </script>
 </body>
