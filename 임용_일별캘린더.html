@@ -1,0 +1,363 @@
+<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>임용 일별 캘린더 (목표 60점)</title><style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#22201c;--muted:#6b675f;--line:#e6e2d9;--accent:#7a5c3e;--gold:#c8a24a;--lec:#4a5a8a;--fin:#8a3b2e;--off:#b9b3a6;--flag:#fbf3e0;--flagline:#e7cf9a;--flagink:#7a5a17;--shadow:0 1px 2px rgba(0,0,0,.05),0 4px 16px rgba(60,50,30,.06);}
+@media(prefers-color-scheme:dark){:root{--bg:#1c1a17;--card:#26231f;--ink:#eee9e0;--muted:#a89f92;--line:#38342d;--accent:#c9a678;--gold:#d8b657;--lec:#9fb0e0;--fin:#e08a76;--off:#6b655b;--flag:#332b18;--flagline:#5c4a24;--flagink:#e6cd90;--shadow:0 1px 2px rgba(0,0,0,.3),0 6px 22px rgba(0,0,0,.28);}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',system-ui,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 18px 80px}
+header{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 18px;margin-bottom:8px}
+.hin{max-width:1080px;margin:0 auto;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+h1{font-size:16px;margin:0;font-weight:800}.goal{font-size:12px;font-weight:800;background:var(--accent);color:#fff;padding:2px 9px;border-radius:999px}
+@media(prefers-color-scheme:dark){.goal{color:#1c1a17}}
+.sub{font-size:12px;color:var(--muted);margin-left:auto}
+.lead{margin:22px 0 6px}.lead h2{font-size:23px;margin:0 0 4px;font-weight:800;letter-spacing:-.5px}.lead p{margin:3px 0;color:var(--muted);font-size:13px}
+.monthdiv{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:800;margin:34px 0 10px;border-bottom:2px solid var(--line);padding-bottom:6px}
+.wkhead{display:flex;align-items:center;gap:10px;margin:20px 0 8px}
+.wkbadge{font-size:12px;font-weight:800;padding:3px 10px;border-radius:8px;color:#fff}
+@media(prefers-color-scheme:dark){.wkbadge{color:#1c1a17}}
+.wkspan{font-size:12px;color:var(--muted)}.wknote{font-size:11.5px;color:var(--flagink);background:var(--flag);border:1px solid var(--flagline);padding:1px 8px;border-radius:6px}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);font-size:12.5px;margin-bottom:6px}
+td{padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}tr:last-child td{border-bottom:none}
+.dcell{white-space:nowrap;font-weight:800;width:74px;color:var(--accent)}
+.dow{font-size:11px;color:var(--muted);font-weight:600}
+.sat .dcell{color:var(--gold)} .off td{background:rgba(122,92,62,.04)} .off .dcell{color:var(--off)}
+.blk{margin:1px 0}.blk .t{font-size:10px;font-weight:800;color:var(--muted);margin-right:5px}
+.lec{color:var(--lec);font-weight:700}.chk{margin-right:7px;accent-color:var(--accent);width:15px;height:15px;vertical-align:-2px}
+.offtxt{color:var(--off);font-weight:700}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin:10px 2px 0}
+.legend span{display:inline-flex;align-items:center;gap:5px}.dot{width:9px;height:9px;border-radius:3px}
+.foot{margin-top:36px;font-size:11.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+.tip{background:var(--flag);border:1px solid var(--flagline);border-radius:12px;padding:13px 17px;margin:14px 0;font-size:12.5px}
+.tip b{color:var(--flagink)}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);text-decoration:none;padding:4px 9px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin-right:8px}
+.backlink:hover{border-color:var(--accent);color:var(--accent)}
+/* 3-state 상태 버튼 (초록 완료 / 노랑 부분 / 빨강 안함) */
+.tri{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;padding:0;margin-right:8px;border:1.5px solid var(--line);border-radius:5px;background:var(--card);cursor:pointer;font-size:13px;font-weight:900;line-height:1;color:transparent;vertical-align:-4px;transition:.12s}
+.tri:hover{border-color:var(--accent)}
+.tri[data-state="g"]{background:#3f6b4f;border-color:#3f6b4f;color:#fff}
+.tri[data-state="y"]{background:#c8a24a;border-color:#c8a24a;color:#fff}
+.tri[data-state="r"]{background:#8a3b2e;border-color:#8a3b2e;color:#fff}
+@media(prefers-color-scheme:dark){
+  .tri[data-state="g"]{background:#8fc7a4;border-color:#8fc7a4;color:#1c1a17}
+  .tri[data-state="y"]{background:#d8b657;border-color:#d8b657;color:#1c1a17}
+  .tri[data-state="r"]{background:#e08a76;border-color:#e08a76;color:#1c1a17}
+}
+/* 메모 버튼/패널 */
+.rowtool{margin-top:6px;display:flex;justify-content:flex-end}
+.memobtn{background:var(--card);border:1px solid var(--line);color:var(--muted);font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:6px;cursor:pointer;transition:.12s}
+.memobtn:hover{border-color:var(--accent);color:var(--accent)}
+.memobtn.has{background:var(--flag);border-color:var(--flagline);color:var(--flagink)}
+.memopanel{margin-top:6px}
+.memota{width:100%;min-height:56px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 10px;color:var(--ink);font-family:inherit;font-size:12.5px;line-height:1.5;resize:vertical;box-sizing:border-box}
+.memota:focus{outline:none;border-color:var(--accent)}
+/* 상단 요약/내보내기 바 */
+.expbar{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--line);border-radius:12px}
+.expbar button{background:var(--bg);border:1px solid var(--line);color:var(--ink);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.12s}
+.expbar button:hover{border-color:var(--accent);color:var(--accent)}
+.expbar .legend2{display:inline-flex;align-items:center;gap:10px;font-size:11.5px;color:var(--muted)}
+.expbar .lg{display:inline-flex;align-items:center;gap:4px}
+.expbar .sq{width:11px;height:11px;border-radius:3px;display:inline-block;border:1px solid var(--line)}
+.expbar .sq.g{background:#3f6b4f;border-color:#3f6b4f}
+.expbar .sq.y{background:#c8a24a;border-color:#c8a24a}
+.expbar .sq.r{background:#8a3b2e;border-color:#8a3b2e}
+@media(prefers-color-scheme:dark){.expbar .sq.g{background:#8fc7a4}.expbar .sq.y{background:#d8b657}.expbar .sq.r{background:#e08a76}}
+.expbar .summary{margin-left:auto;font-size:12px;color:var(--muted);font-weight:700}
+</style></head><body>
+<header><div class="hin"><a href="index.html" class="backlink">← 진도판</a><h1>2027 임용 · 일별 캘린더</h1><span class="goal">목표 60점</span><span class="sub">시험 11/28(토) · 일요일 OFF · 강의 중심</span></div></header>
+<div class="wrap">
+<div class="lead"><h2>하루 단위 실행 캘린더</h2><p>전략·주간 개요는 <b>회독 로드맵</b> 문서를, 매일 실행은 이 캘린더를 보세요. 체크박스로 그날그날 체크(이 창에서만 유지).</p></div>
+<div class="tip"><b>블록 안내</b> · 골든(8/1~8/17): 낮 9:00~15:30 + 밤 20:30~1:00 하루 2블록 · 출근(8/18~): 평일 밤 20:30~1:00 1블록, 토요일 낮10~16시+밤 · 일요일 전면 OFF(버퍼). 강의는 <span class="lec">파란색</span>, 배속은 로드맵 참조(교육학 4요소 1.3~1.5x·나머지 2x·전공 1.5x).</div>
+<div class="expbar">
+  <span class="legend2">
+    <span class="lg"><i class="sq g"></i>완료</span>
+    <span class="lg"><i class="sq y"></i>부분(다 못함)</span>
+    <span class="lg"><i class="sq r"></i>안 함</span>
+  </span>
+  <button id="expBtn" title="현재 기록을 JSON 파일로 저장">📥 JSON 내보내기</button>
+  <button id="impBtn" title="이전에 내보낸 JSON 불러오기">📤 불러오기</button>
+  <span class="summary" id="summary">기록 없음</span>
+</div>
+<p class="note" style="font-size:11.5px;color:var(--muted);margin:4px 2px 0">좌측 상태버튼: 클릭할 때마다 <b>없음 → 완료(초록) → 부분(노랑) → 안 함(빨강)</b>으로 순환. 우측 <b>＋ 메모</b>: 안 한 것/휴식 여부/특이사항을 기록 (일요일 포함). 모든 기록은 이 브라우저에만 저장 — 정기적으로 <b>내보내기</b>로 백업하세요.</p>
+<div class="legend"><span><i class="dot" style="background:var(--gold)"></i>골든/전환</span><span><i class="dot" style="background:var(--lec)"></i>강의기</span><span><i class="dot" style="background:var(--fin)"></i>기출·마무리</span><span><i class="dot" style="background:var(--off)"></i>일요일 OFF</span></div>
+<div class="monthdiv">8월</div>
+<div class="wkhead"><span class="wkbadge" style="background:#c8a24a">W1 · 골든</span><span class="wkspan">08/01 ~ 08/08</span></div>
+<table>
+<tr class="sat"><td class="dcell">08/01<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 화법 1~2강 (자아개념·의사소통 불안·대화 원리)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>화법의사소통 Ⅰ 자아개념·의사소통 불안 p.17~38 + Ⅱ 자기노출·공감적 대화 p.39~66</div></td></tr>
+<tr class="off"><td class="dcell">08/02<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+<tr class=""><td class="dcell">08/03<br><span class="dow">월</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 화법 3~4강 (협력·공손성·연설·설득 메시지)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>화법의사소통 Ⅲ 대화원리(협력·예의·공손성) p.67~90 + Ⅸ 논증 p.213~236</div></td></tr>
+<tr class=""><td class="dcell">08/04<br><span class="dow">화</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 화법 마무리 (비언어·공신력·토론/토의 개관)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>화법의사소통 Ⅳ 비언어 p.91~120 + Ⅷ 공신력 p.191~212</div></td></tr>
+<tr class=""><td class="dcell">08/05<br><span class="dow">수</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 독서 1~2강 (읽기 원리·독서 능력·상위인지)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>독서교육론 1장 독해 과정모형 p.27~46</div></td></tr>
+<tr class=""><td class="dcell">08/06<br><span class="dow">목</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 독서 3~4강 (맥락·독해 기능·과정별 전략)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>독서교육론 2장 독자·스키마 p.63~100</div></td></tr>
+<tr class=""><td class="dcell">08/07<br><span class="dow">금</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 독서 마무리 (평가·통합)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>독서교육론 8장 독해전략·수준 p.287~320</div></td></tr>
+<tr class="sat"><td class="dcell">08/08<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span>밀린 강의·회독 캐치업 (~5h)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>★ 주간 인출: 자아개념·자기노출(사회적 침투)·공손성·논증 요소·독해 3수준·읽기 과정모형 → 백지 + 자기채점</div></td></tr>
+<tr class="off"><td class="dcell">08/09<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#c8a24a">W2 · 골든</span><span class="wkspan">08/10 ~ 08/15</span></div>
+<table>
+<tr class=""><td class="dcell">08/10<br><span class="dow">월</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 작문 1~2강 (작문 이론 전개·인지 과정 모형)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>작문교육론 2장 작문 이론 p.65~104</div></td></tr>
+<tr class=""><td class="dcell">08/11<br><span class="dow">화</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 작문 3~4강 (과정·전략·고쳐쓰기·평가)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>작문교육론 10장 평가 p.405~448</div></td></tr>
+<tr class=""><td class="dcell">08/12<br><span class="dow">수</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 문학 고전시가 1강 (갈래 개관·가사)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>염은열 고전시가 — 가사·사설시조</div></td></tr>
+<tr class=""><td class="dcell">08/13<br><span class="dow">목</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 문법 1강 (음운 개관·변동)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>염은열 고전시가 — 향가·고려속요·연시조</div></td></tr>
+<tr class=""><td class="dcell">08/14<br><span class="dow">금</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span><span class="lec">전공</span> 문학/문법 마무리 → 7월분 완청 클리어</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>문법총론1 2장 음운론 p.41~68 예습</div></td></tr>
+<tr class="sat"><td class="dcell">08/15<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">낮</span>밀린 강의·회독 캐치업 (~5h)</div><div class="blk"><input type="checkbox" class="chk"><span class="t">밤</span>★ 주간 인출: 4대 작문이론+독자관·쓰기평가 유형·가사·향가·고려속요 전개 → 백지</div></td></tr>
+<tr class="off"><td class="dcell">08/16<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#c8a24a">W3 · 전환</span><span class="wkspan">08/17 ~ 08/22</span><span class="wknote">8/17은 골든(낮+밤 가능), 8/18부터 출근(평일 밤만)</span></div>
+<table>
+<tr class=""><td class="dcell">08/17<br><span class="dow">월</span></td><td><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] [8/17 골든] 낮 <span class="lec">전공</span> 8월 착수 · 밤 <span class="lec">교육학</span> PART1 Theme01~06 (교육과정 유형·설계)</div></td></tr>
+<tr class=""><td class="dcell">08/18<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART1 Theme07~13 (통합·타일러·타바·워커)</div></td></tr>
+<tr class=""><td class="dcell">08/19<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART1 Theme14~19 (스킬벡·아이즈너·파이너·백워드·에릭슨)</div></td></tr>
+<tr class=""><td class="dcell">08/20<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART1 Theme20~26 (실행·재구성·2015/2022 개정)</div></td></tr>
+<tr class=""><td class="dcell">08/21<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 8월 강의 이어보기</div></td></tr>
+<tr class="sat"><td class="dcell">08/22<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 문법총론1 2장 음운론 p.41~102 정독(최우선) / 윤여탁 현대시 착수(이미지)</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 음운 변동 4분류+예 · 타일러/타바/워커 절차 · 2022개정 핵심</div></td></tr>
+<tr class="off"><td class="dcell">08/23<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W4 · 강의</span><span class="wkspan">08/24 ~ 08/29</span></div>
+<table>
+<tr class=""><td class="dcell">08/24<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART2 Theme27~33 (학습자중심·ADDIE·딕캐리·가네)</div></td></tr>
+<tr class=""><td class="dcell">08/25<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART2 Theme34~41 (메릴·라이겔루스·ARCS·캐롤·블룸·브루너·오수벨)</div></td></tr>
+<tr class=""><td class="dcell">08/26<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART2 Theme42~50 (조나센·상황학습·인지도제·PBL)</div></td></tr>
+<tr class=""><td class="dcell">08/27<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 8월 강의 이어보기</div></td></tr>
+<tr class=""><td class="dcell">08/28<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 8월 강의 / 밀린 것 정리</div></td></tr>
+<tr class="sat"><td class="dcell">08/29<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 문법총론1 3장 단어형성 p.115~168 / 품사 p.169~216 / 윤여탁 저항시(이육사·윤동주)</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 워커 숙의·백워드설계 · 단어형성(직접구성요소) · 저항시 화자</div></td></tr>
+<tr class="off"><td class="dcell">08/30<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W5 · 강의</span><span class="wkspan">08/31 ~ 09/05</span></div>
+<table>
+<tr class=""><td class="dcell">08/31<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART2 Theme51~60 (프로젝트·자원기반·문답·토의·자기주도·협동)</div></td></tr>
+</table>
+<div class="monthdiv">9월</div>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W5 · 강의</span><span class="wkspan">08/31 ~ 09/05</span></div>
+<table>
+<tr class=""><td class="dcell">09/01<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART2 Theme61~68 (매체·ASSURE·인지부하·e러닝·블렌디드·AI교과서)</div></td></tr>
+<tr class=""><td class="dcell">09/02<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 8월 강의 마무리</div></td></tr>
+<tr class=""><td class="dcell">09/03<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 문학 고전시가 심화 이어보기</div></td></tr>
+<tr class=""><td class="dcell">09/04<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 정리 + 미니 인출</div></td></tr>
+<tr class="sat"><td class="dcell">09/05<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 문법총론1 4장 문장성분 p.231~265 · 사동피동 p.359~372 / 국어사개론 6장 선어말·높임 p.202~211</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: PBL·정착수업·조나센·정교화 · 사동피동 · 중세 객체높임</div></td></tr>
+<tr class="off"><td class="dcell">09/06<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W6 · 강의</span><span class="wkspan">09/07 ~ 09/12</span></div>
+<table>
+<tr class=""><td class="dcell">09/07<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART3 Theme69~75 (평가 개념·메타평가·타일러·스크리븐·CIPP)</div></td></tr>
+<tr class=""><td class="dcell">09/08<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART3 Theme76~80 (규준/준거참조·진단·형성·총괄·대안적)</div></td></tr>
+<tr class=""><td class="dcell">09/09<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART3 Theme81~85 (수행·포트폴리오·양호도·평정오류·문항분석)</div></td></tr>
+<tr class=""><td class="dcell">09/10<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 9월 신규 강의(있으면) / 없으면 문학 회독</div></td></tr>
+<tr class=""><td class="dcell">09/11<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 + 미니 인출</div></td></tr>
+<tr class="sat"><td class="dcell">09/12<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 독서교육론 5장 교육과정 p.173~226 · 10장 평가 p.373~410 / 국어사개론 3장 음운사 p.45~86</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 참조평가 3종·타당도·신뢰도 · 독서평가(포트폴리오·관찰) · 중세 음운</div></td></tr>
+<tr class="off"><td class="dcell">09/13<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W7 · 강의</span><span class="wkspan">09/14 ~ 09/19</span></div>
+<table>
+<tr class=""><td class="dcell">09/14<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART4 Theme86~91 (행정 개념·원리·이론·조직)</div></td></tr>
+<tr class=""><td class="dcell">09/15<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART4 Theme92~97 (풍토·문화·갈등·관리·동기이론)</div></td></tr>
+<tr class=""><td class="dcell">09/16<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART4 Theme98~103 (지도성·의사소통·의사결정)</div></td></tr>
+<tr class=""><td class="dcell">09/17<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 신규 강의 / 작문 회독</div></td></tr>
+<tr class=""><td class="dcell">09/18<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 + 미니 인출</div></td></tr>
+<tr class="sat"><td class="dcell">09/19<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 작문교육론 6장 과정·고쳐쓰기 p.213~276 · 4장 정의적요인 p.125~188 / 고소설강의 애정전기·판소리계</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 고쳐쓰기(추가·삭제·대치·재구성) · 쓰기동기·효능감·불안</div></td></tr>
+<tr class="off"><td class="dcell">09/20<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W8 · 강의</span><span class="wkspan">09/21 ~ 09/26</span><span class="wknote">명절(추석) 주간이면 강의량 축소 + 일요일 버퍼 활용</span></div>
+<table>
+<tr class=""><td class="dcell">09/21<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART4 Theme104~108 (교육기획·장학·재정·책무성) → 4요소 1차 완주</div></td></tr>
+<tr class=""><td class="dcell">09/22<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 문학 고전산문 강의</div></td></tr>
+<tr class=""><td class="dcell">09/23<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 문학 고전산문 강의</div></td></tr>
+<tr class=""><td class="dcell">09/24<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 신규 강의 / 고소설 회독</div></td></tr>
+<tr class=""><td class="dcell">09/25<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 정리</div></td></tr>
+<tr class="sat"><td class="dcell">09/26<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 고소설강의 이본·몽유록·야담 / 독서교육론 9장 글구조 p.321~350</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 장학 유형·지도성(변혁·상황)·관료제 · 설명적 글 구조 · 판소리계 이본</div></td></tr>
+<tr class="off"><td class="dcell">09/27<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W9 · 강의</span><span class="wkspan">09/28 ~ 10/03</span></div>
+<table>
+<tr class=""><td class="dcell">09/28<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART5 Theme109~120 심리 (2x 속청 — 발달·지능)</div></td></tr>
+<tr class=""><td class="dcell">09/29<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART5 Theme121~135 (동기·귀인·자기효능)</div></td></tr>
+<tr class=""><td class="dcell">09/30<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART5 Theme136~144 (조건형성·정보처리·메타인지)</div></td></tr>
+</table>
+<div class="monthdiv">10월</div>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W9 · 강의</span><span class="wkspan">09/28 ~ 10/03</span></div>
+<table>
+<tr class=""><td class="dcell">10/01<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 현대소설 강의 (1930년대·전후)</div></td></tr>
+<tr class=""><td class="dcell">10/02<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 + ★4요소 백지 예열</div></td></tr>
+<tr class="sat"><td class="dcell">10/03<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 현대소설(윤희재) 1930년대·전후 발췌</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: ★4요소 1차 백지쓰기(교육과정·방법·평가·행정 대표개념) · 1930년대 소설 기법</div></td></tr>
+<tr class="off"><td class="dcell">10/04<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W10 · 강의</span><span class="wkspan">10/05 ~ 10/10</span></div>
+<table>
+<tr class=""><td class="dcell">10/05<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART6 Theme145~157 사회 (2x 속청)</div></td></tr>
+<tr class=""><td class="dcell">10/06<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART6~7 Theme158~171 (사회 마무리·생활지도·상담 착수) 속청</div></td></tr>
+<tr class=""><td class="dcell">10/07<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 현대소설 강의 (해방기·도시소외)</div></td></tr>
+<tr class=""><td class="dcell">10/08<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 신규 강의 / 화법 회독</div></td></tr>
+<tr class=""><td class="dcell">10/09<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의 + 미니 인출</div></td></tr>
+<tr class="sat"><td class="dcell">10/10<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 현대소설 해방기·도시소외 발췌 / 화법의사소통 Ⅹ 토론 p.237~268 · Ⅺ 토의·협상 p.269~310</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 토론 필수쟁점·입증책임 · 토의 유형·협상 전략 · 전후/해방기 소설</div></td></tr>
+<tr class="off"><td class="dcell">10/11<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W11 · 강의</span><span class="wkspan">10/12 ~ 10/17</span></div>
+<table>
+<tr class=""><td class="dcell">10/12<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART7 Theme172~181 생활지도·상담 (2x 속청)</div></td></tr>
+<tr class=""><td class="dcell">10/13<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART8 Theme182~192 교육사·철학 (2x 속청)</div></td></tr>
+<tr class=""><td class="dcell">10/14<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> PART8 Theme193~202 (근현대 교육철학) 속청 → 강의 1회독 마감</div></td></tr>
+<tr class=""><td class="dcell">10/15<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 밀린 강의 클리어</div></td></tr>
+<tr class=""><td class="dcell">10/16<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 약점 영역 보강 + 미니 인출</div></td></tr>
+<tr class="sat"><td class="dcell">10/17<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 화법의사소통 Ⅻ 면담·발표 p.311~364 · Ⅷ 공신력 p.191~212 / 약점 영역</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 면담 질문·윤리 · 공신력 차원 · 감성적 설득</div></td></tr>
+<tr class="off"><td class="dcell">10/18<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#4a5a8a">W12 · 정리</span><span class="wkspan">10/19 ~ 10/24</span></div>
+<table>
+<tr class=""><td class="dcell">10/19<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 강의 캐치업 (밀린 것 1)</div></td></tr>
+<tr class=""><td class="dcell">10/20<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 강의 캐치업 (밀린 것 2)</div></td></tr>
+<tr class=""><td class="dcell">10/21<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 빈출 총점검(문학)</div></td></tr>
+<tr class=""><td class="dcell">10/22<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 빈출 총점검(문법)</div></td></tr>
+<tr class=""><td class="dcell">10/23<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 교육론 빈출 총점검</div></td></tr>
+<tr class="sat"><td class="dcell">10/24<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 약한 영역만 재독(빈출 장 위주)</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: ★전 영역 빈출 백지 회전 1차 (문학·문법·교육론·<span class="lec">교육학</span> 4요소)</div></td></tr>
+<tr class="off"><td class="dcell">10/25<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#8a3b2e">W13 · 전환·버퍼</span><span class="wkspan">10/26 ~ 10/31</span></div>
+<table>
+<tr class=""><td class="dcell">10/26<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 밀린 강의·회독 캐치업 마감 1</div></td></tr>
+<tr class=""><td class="dcell">10/27<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 캐치업 마감 2</div></td></tr>
+<tr class=""><td class="dcell">10/28<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 캐치업 마감 3 → 입력 종료</div></td></tr>
+<tr class=""><td class="dcell">10/29<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 기출 세팅(연도별 배치 확인) + 답안지 양식</div></td></tr>
+<tr class=""><td class="dcell">10/30<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 2017 기출 A/B 시범 풀이</div></td></tr>
+<tr class="sat"><td class="dcell">10/31<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] <span class="lec">전공</span> 2018 기출 A/B 풀이 + 오답</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 기출 오답 개념만 개론서 재확인</div></td></tr>
+</table>
+<div class="monthdiv">11월</div>
+<table>
+<tr class="off"><td class="dcell">11/01<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#8a3b2e">W14 · 기출</span><span class="wkspan">11/02 ~ 11/07</span></div>
+<table>
+<tr class=""><td class="dcell">11/02<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 기출 2019 A/B 풀이+오답</div></td></tr>
+<tr class=""><td class="dcell">11/03<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 기출 2020 A/B</div></td></tr>
+<tr class=""><td class="dcell">11/04<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 기출 2021 A/B</div></td></tr>
+<tr class=""><td class="dcell">11/05<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 기출 2022 A/B</div></td></tr>
+<tr class=""><td class="dcell">11/06<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 기출 2023 A/B</div></td></tr>
+<tr class="sat"><td class="dcell">11/07<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] <span class="lec">전공</span> 기출 2024·2025·2026 A/B 몰아 풀기 + 오답 클러스터링</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 틀린 문항 개념 백지 + 재출제 예정(가사·음운·쓰기평가) 표시</div></td></tr>
+<tr class="off"><td class="dcell">11/08<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#8a3b2e">W15 · 논술·2회전</span><span class="wkspan">11/09 ~ 11/14</span></div>
+<table>
+<tr class=""><td class="dcell">11/09<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">교육학</span> 논술 실전 — 교육과정 요소 (틀+구성표현)</div></td></tr>
+<tr class=""><td class="dcell">11/10<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 논술 실전 — 교육방법 요소</div></td></tr>
+<tr class=""><td class="dcell">11/11<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 논술 실전 — 교육평가 요소</div></td></tr>
+<tr class=""><td class="dcell">11/12<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 논술 실전 — 교육행정 요소</div></td></tr>
+<tr class=""><td class="dcell">11/13<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] <span class="lec">전공</span> 빈출 2회전 인출 (문학·문법)</div></td></tr>
+<tr class="sat"><td class="dcell">11/14<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] <span class="lec">교육학</span> 논술 1문항 완문 실전(20점 자가채점) + <span class="lec">전공</span> 빈출 2회전(교육론)</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 워커·타일러·참조평가 · 가사·음운·쓰기평가 → 백지 2회전</div></td></tr>
+<tr class="off"><td class="dcell">11/15<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#8a3b2e">W16 · 총정리</span><span class="wkspan">11/16 ~ 11/21</span></div>
+<table>
+<tr class=""><td class="dcell">11/16<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 빈출 TOP20 인출 — 문학(가사·사설시조·이미지·저항시)</div></td></tr>
+<tr class=""><td class="dcell">11/17<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 인출 — 문법(음운·중세·문장성분)</div></td></tr>
+<tr class=""><td class="dcell">11/18<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 인출 — 교육론(쓰기평가·작문이론·독해수준·평가론)</div></td></tr>
+<tr class=""><td class="dcell">11/19<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 인출 — <span class="lec">교육학</span> 4요소</div></td></tr>
+<tr class=""><td class="dcell">11/20<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 논술 실전 1세트 + 시간 배분</div></td></tr>
+<tr class="sat"><td class="dcell">11/21<br><span class="dow">토</span></td><td><div class="blk"><input type="checkbox" class="chk"><span class="t">토낮</span>[낮 10~16시] 전과목 모의 1세트(시험 시간대로) + 오답</div><div class="blk"><input type="checkbox" class="chk">[밤] ★ 주간 인출: 초빈출만 회전 — 확신 영역 굳히기</div></td></tr>
+<tr class="off"><td class="dcell">11/22<br><span class="dow">일</span></td><td><span class="offtxt">OFF</span> · 휴식/버퍼(밀린 것만 가볍게)</td></tr>
+</table>
+<div class="wkhead"><span class="wkbadge" style="background:#8a3b2e">W17 · 최종</span><span class="wkspan">11/23 ~ 11/27</span></div>
+<table>
+<tr class=""><td class="dcell">11/23<br><span class="dow">월</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 초빈출 인출 회전(문학·문법)</div></td></tr>
+<tr class=""><td class="dcell">11/24<br><span class="dow">화</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 초빈출 인출 회전(교육론·<span class="lec">교육학</span>)</div></td></tr>
+<tr class=""><td class="dcell">11/25<br><span class="dow">수</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 논술 시간배분 리허설 + 답안 양식 손에 익히기</div></td></tr>
+<tr class=""><td class="dcell">11/26<br><span class="dow">목</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] 오답노트 최종 훑기 + 컨디션 조절</div></td></tr>
+<tr class=""><td class="dcell">11/27<br><span class="dow">금</span></td><td><div class="blk"><span class="t">낮</span><span class="offtxt" style="color:var(--muted)">출근</span></div><div class="blk"><input type="checkbox" class="chk">[밤 20:30~1시] [11/27 금] 가볍게 초빈출만 + 준비물·수험표 확인, 일찍 취침</div></td></tr>
+<tr class="sat"><td class="dcell" style="color:var(--fin)">11/28<br><span class="dow">토</span></td><td><b style="color:var(--fin)">★ 시험일</b> — 2027학년도 중등 국어 1차. 침착하게, 아는 것부터.</td></tr>
+</table>
+<div class="foot">일요일 전면 OFF(최소 버퍼). 강의가 밀리면 Tier3(교육학 PART5~8 속청·저빈출)부터 스킵, Tier1(음운·가사·현대시·쓰기평가·작문이론·교육학 4요소)은 사수. 시험 2026-11-28(토). 전략 상세는 회독 로드맵 문서 참조.</div>
+<script>
+(function(){
+  const KEY='imyong_daily_v1', YEAR=2026;
+  let data={}; try{data=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){data={};}
+  function save(){localStorage.setItem(KEY,JSON.stringify(data));}
+  function ent(d){if(!data[d])data[d]={blocks:{},memo:''};return data[d];}
+  const ORDER=['','g','y','r'], LBL={'':'','g':'✓','y':'~','r':'✗'};
+  function updateSummary(){
+    let g=0,y=0,r=0,mm=0;
+    Object.values(data).forEach(e=>{
+      Object.values(e.blocks||{}).forEach(s=>{if(s==='g')g++;else if(s==='y')y++;else if(s==='r')r++;});
+      if(e.memo&&e.memo.trim())mm++;
+    });
+    const s=document.getElementById('summary');
+    if(s)s.textContent=`✓${g} · ~${y} · ✗${r} · 메모 ${mm}일`;
+  }
+  document.querySelectorAll('table tr').forEach(tr=>{
+    const dc=tr.querySelector('.dcell'); if(!dc) return;
+    const m=dc.textContent.match(/(\d\d)\/(\d\d)/); if(!m) return;
+    const date=YEAR+'-'+m[1]+'-'+m[2];
+    const e=ent(date);
+    // 각 .chk를 3상태 버튼으로 치환
+    tr.querySelectorAll('.chk').forEach((chk,idx)=>{
+      const btn=document.createElement('button');
+      btn.type='button'; btn.className='tri';
+      const cur=e.blocks[idx]||''; btn.dataset.state=cur; btn.textContent=LBL[cur];
+      btn.setAttribute('aria-label','상태 변경 (클릭=순환)');
+      const blk=chk.closest('.blk');
+      if(blk&&cur==='g') blk.style.opacity=0.55;
+      btn.addEventListener('click',()=>{
+        const c=btn.dataset.state||'';
+        const next=ORDER[(ORDER.indexOf(c)+1)%ORDER.length];
+        btn.dataset.state=next; btn.textContent=LBL[next];
+        e.blocks[idx]=next;
+        if(blk) blk.style.opacity=(next==='g')?0.55:1;
+        save(); updateSummary();
+      });
+      chk.replaceWith(btn);
+    });
+    // 메모 버튼/패널 추가 (일요일 OFF 행 포함)
+    const td=tr.querySelector('td:last-child'); if(!td) return;
+    const bar=document.createElement('div'); bar.className='rowtool';
+    const bm=document.createElement('button'); bm.type='button'; bm.className='memobtn';
+    const hasM=!!(e.memo&&e.memo.trim());
+    bm.textContent=hasM?'📝 메모(있음)':'＋ 메모';
+    if(hasM) bm.classList.add('has');
+    bar.appendChild(bm);
+    const pan=document.createElement('div'); pan.className='memopanel'; pan.style.display='none';
+    const ta=document.createElement('textarea'); ta.className='memota';
+    ta.placeholder=(tr.classList.contains('off')?'오늘 뭘 했는지 (휴식/캐치업 무엇 등)':'안 한 것/특이사항/오늘의 상태');
+    ta.value=e.memo||'';
+    pan.appendChild(ta);
+    td.appendChild(bar); td.appendChild(pan);
+    bm.addEventListener('click',()=>{
+      const open=pan.style.display!=='none';
+      pan.style.display=open?'none':'block';
+      if(!open) ta.focus();
+    });
+    ta.addEventListener('input',()=>{
+      e.memo=ta.value;
+      const h=!!(ta.value&&ta.value.trim());
+      bm.textContent=h?'📝 메모(있음)':'＋ 메모';
+      bm.classList.toggle('has',h);
+      save(); updateSummary();
+    });
+  });
+  updateSummary();
+  // 내보내기
+  document.getElementById('expBtn').addEventListener('click',()=>{
+    const payload={exported_at:new Date().toISOString(),version:'v1',data:data};
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const a=document.createElement('a');
+    const stamp=new Date().toISOString().slice(0,10);
+    a.href=URL.createObjectURL(blob); a.download='imyong_daily_'+stamp+'.json'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  });
+  // 불러오기
+  document.getElementById('impBtn').addEventListener('click',()=>{
+    const inp=document.createElement('input'); inp.type='file'; inp.accept='.json,application/json';
+    inp.onchange=ev=>{
+      const f=ev.target.files[0]; if(!f) return;
+      const rd=new FileReader();
+      rd.onload=e=>{
+        try{
+          const j=JSON.parse(e.target.result);
+          const incoming=(j&&j.data)?j.data:j;
+          if(!incoming||typeof incoming!=='object') throw new Error('형식 오류');
+          if(!confirm('현재 기록을 불러온 파일로 덮어씁니다. 계속?')) return;
+          data=incoming; save(); location.reload();
+        }catch(err){alert('불러오기 실패: '+err.message);}
+      };
+      rd.readAsText(f);
+    };
+    inp.click();
+  });
+})();
+</script>
+</div></body></html>
