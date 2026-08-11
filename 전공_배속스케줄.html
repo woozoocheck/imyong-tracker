@@ -9,7 +9,6 @@
     --bg: #f6f7fb; --card: #ffffff; --ink: #1f2430; --sub: #6b7280;
     --accent: #4f6df5; --accent-soft: #eef1fe; --line: #e5e7eb;
     --warn: #b45309; --warn-bg: #fef3c7; --ok: #047857; --ok-bg: #d1fae5;
-    --future: #7c3aed; --future-bg: #f3e8ff;
     --split: #db2777; --split-bg: #fdf2f8;
     --free: #0891b2; --free-bg: #ecfeff;
   }
@@ -19,11 +18,13 @@
     background: var(--bg); color: var(--ink); padding: 20px 14px 64px;
   }
   .wrap { max-width: 880px; margin: 0 auto; }
-  .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
   .backbtn {
     font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none;
     background: var(--accent-soft); padding: 8px 14px; border-radius: 999px; white-space: nowrap;
   }
+  .srcbadge { font-size: 12px; font-weight: 600; color: var(--sub); background: var(--card); border: 1px solid var(--line); padding: 6px 12px; border-radius: 999px; }
+  .srcbadge.live { color: var(--ok); border-color: var(--ok); }
   h1 { font-size: 24px; margin-bottom: 6px; }
   .subtitle { color: var(--sub); font-size: 14px; margin-bottom: 18px; line-height: 1.6; }
 
@@ -129,9 +130,11 @@
 <div class="wrap">
   <div class="topbar">
     <a class="backbtn" href="index.html">← 진도판으로</a>
+    <span class="srcbadge" id="srcBadge">강의 목록 불러오는 중…</span>
   </div>
   <h1>📚 전공국어 진도 스케줄 <span style="font-size:15px;color:var(--accent)">· 배속 플래너</span></h1>
-  <p class="subtitle">모의고사 제외 52강 (18~77강, 영상 총 50시간 25분) · 표의 「분」은 영상 기준, 합계는 실제 소요시간<br>
+  <p class="subtitle">모의고사 강의는 자동 제외 · 표의 「분」은 영상 기준, 합계는 실제 소요시간<br>
+  강의 목록은 진도판과 같은 데이터를 실시간으로 읽어요 — <b>진도판 업데이트 커맨드를 돌리면 여기도 자동 반영</b>됩니다.<br>
   날짜·시간·시작 강의를 바꾸면 스케줄이 바로 다시 짜지고, 설정은 이 기기에 자동 저장돼요.</p>
 
   <div class="filters">
@@ -164,26 +167,10 @@
   <div id="notice"></div>
   <div id="days"></div>
 
-  <div class="excluded">
-    <h2>🚫 제외한 모의고사 강의 — 총 13강 (영상 17시간 33분)</h2>
-    <ul>
-      <li><b>12강</b> 심화 컨텐츠 모의고사 1회 A형 1~6번 해설 (81분) — 스케줄 범위(18강~) 이전</li>
-      <li><b>13강</b> 심화 컨텐츠 모의고사 1회 A형 7~12번 해설 (42분) — 스케줄 범위 이전</li>
-      <li><b>14강</b> 심화 컨텐츠 모의고사 1회 B형 1~12번 해설 (54분) — 스케줄 범위 이전</li>
-      <li><b>27강</b> 심화 컨텐츠 모의고사 2회 A형 1~12번 해설 (95분)</li>
-      <li><b>28강</b> 2회 A형 7번 정정 / 모의고사 2회 B형 1~11번 해설 (73분)</li>
-      <li><b>39강</b> 심화 컨텐츠 모의고사 3회 A형 1~12번 해설 (90분)</li>
-      <li><b>40강</b> 심화 컨텐츠 모의고사 3회 B형 1~11번 해설 (88분)</li>
-      <li><b>51강</b> 심화 컨텐츠 모의고사 4회 A형 1~12번 해설 (104분)</li>
-      <li><b>52강</b> 심화 컨텐츠 모의고사 4회 B형 1~11번 해설 (77분)</li>
-      <li><b>64강</b> 심화 컨텐츠 모의고사 5회 A형 1~12번 해설 (101분)</li>
-      <li><b>65강</b> 심화 컨텐츠 모의고사 5회 B형 1~11번 해설 (73분)</li>
-      <li><b>78강</b> 심화 컨텐츠 모의고사 6회 A형 1~12번 해설 (107분) — 8/14 업데이트분</li>
-      <li><b>79강</b> 심화 컨텐츠 모의고사 6회 B형 1~11번 해설 (68분) — 8/14 업데이트분</li>
-    </ul>
-  </div>
+  <div class="excluded" id="excluded"></div>
 
   <div class="foot">
+    · 강의 목록 출처: 진도판 Supabase(imyong_lectures) 실시간 조회. 실패 시 페이지에 내장된 마지막 스냅샷 사용.<br>
     · 이어듣기 켬: 하루 시간이 다 차면 그 지점(영상 분)에서 끊고 다음 날 이어듣기. 남은 꼬리가 실제 10분 미만이면 그냥 끝까지 봄(약간 초과 허용).<br>
     · 이어듣기 끔: 통강의만 배치 → 각 날에 자투리 여유가 남고 전체 진도가 뒤로 밀림.<br>
     · 끊는 지점은 계산상 기준이라 근처 소단원 끝에서 ±2~3분 조절해도 지장 없음.<br>
@@ -192,60 +179,10 @@
 </div>
 
 <script>
-const LECS = [
-  [18,66,"[음운] 연구개비음과 초성 제약~ㅎ종성체언과 유기음화"],
-  [19,47,"[음운] ㅎ종성체언과 호격조사 하~근대국어 음운 현상 / ㄹ의 ㄴ 비음화"],
-  [20,38,"[형태] 관형격 ㅅ과 사이시옷~15세기 파생접사"],
-  [21,83,"[문학] 문학의 갈래 (서술자, 자아와 세계), 해석교육과 문학의 맥락"],
-  [22,53,"[문학] 갈래 (서정, 서사, 극, 교술), 내용과 형식, 수용과 생산"],
-  [23,24,"[문학] 내용과 형식, 수용과 생산 / 문학교육의 틀 짜기"],
-  [24,56,"[현대시] 발상 교육: 아이러니 (반어와 역설)"],
-  [25,37,"[현대시] 시상 전개와 형상화 방식 / 현대시 프레임 정리"],
-  [26,56,"[현대시] 다리 저는 사람 / [현대소설] 핵심 프레임 개관, 인물의 성격화"],
-  [29,76,"[작문] 작문 교육 트렌드의 이해 / 장르 - 정보전달 글쓰기 컨텐츠"],
-  [30,50,"[작문] 장르 - 정보전달 글쓰기 사례, 설득적 글쓰기 컨텐츠"],
-  [31,60,"[작문] 장르 - 정보전달 글쓰기 사례, 설득적 글쓰기 사례"],
-  [32,60,"[형태] 15세기 명사 파생 접사 (vs 명사형 어미 -(으)ㅁ ~ 부사화 -이)"],
-  [33,81,"[형태] 15세기 파생 접사 (X-하다 ~ -답/롭/스럽-) ~ 15세기 합성어"],
-  [34,74,"[현대소설] 프레임 정리와 사례 1.인물 2.plot"],
-  [35,62,"[현대소설] 프레임 정리와 사례 3.갈등양상 4.크로노토프(시·공간)"],
-  [36,48,"[현대소설] 프레임 정리와 사례 4.크로노토프 5.초점화"],
-  [37,69,"[현대소설] 평가원 기출 목록 확인 / 평가원 지문 프레임 분석 1~2"],
-  [38,81,"[현대소설] 평가원 지문 프레임 분석 3~8"],
-  [41,66,"[작문] 장르 - 학습 작문(학습적 글쓰기)의 컨텐츠와 사례"],
-  [42,74,"[작문] 표현적 글쓰기 / 문제해결과정 - 계획하기, 생성과 조직"],
-  [43,48,"[작문] 문제해결과정 - 생성과 조직, 표현과 고쳐쓰기 컨텐츠"],
-  [44,64,"[형태] 문법화와 국어사(부터, 조차, 까지, 엿-, 날-)"],
-  [45,73,"[형태] 국어사 - 활용, 종결어미, 전성어미, 연결어미, 선어말어미"],
-  [46,75,"[현대소설] 평가원 지문 프레임 분석 1~3 (지문2)"],
-  [47,56,"[현대소설] 평가원 지문 프레임 분석 4~6 (지문2)"],
-  [48,48,"[현대소설] 평가원 지문 프레임 분석 6~8 (지문2)"],
-  [49,86,"[현대소설] 평가원 지문 프레임 분석 9~12 (지문2)"],
-  [50,71,"[현대소설] 평가원 지문 프레임 분석 13~16 / 3주차 지문 분석 9"],
-  [53,63,"[작문] 문제해결과정 - 조정하기와 공유하기 컨텐츠와 사례"],
-  [54,64,"[작문] 교수학습방법 컨텐츠와 작문 이론별 접근 지도법 사례"],
-  [55,44,"[작문] 직접 교수법 ~ 협동 작문 / 평가 컨텐츠와 총체적·분석적 평가"],
-  [56,59,"[통사] 인칭법 -오- ~ 논항 구조의 변화(주다, 삼다)"],
-  [57,49,"[통사] 접속문 구성 ~ 피동법의 변화 / [수능 국어사] 음운: 모음·자음체계"],
-  [58,84,"[현대소설] 평가원 지문(고2) 프레임 분석 1~4"],
-  [59,53,"[현대소설] 평가원 지문(고2) 프레임 분석 5~6 (성장소설)"],
-  [60,48,"[현대소설] 평가원 지문(고2) 프레임 분석 7~9"],
-  [61,66,"[현대소설] 평가원 지문(고2) 프레임 분석 10~13"],
-  [62,50,"[현대소설] 평가원 지문(고2) 프레임 분석 13(소시민의 양상)~17"],
-  [63,29,"[현대소설] 평가원 지문(고2) 프레임 분석 18~20"],
-  [66,78,"[작문] 평가 - 평가 방법별 사례, 평가의 타당도와 신뢰도 사례"],
-  [67,47,"[독서] 본질 - 읽기의 원리, 독서 모형의 컨텐츠와 사례 분석"],
-  [68,47,"[독서] 본질 - 독서 능력과 기능 및 전략 (바렛, 어윈)"],
-  [69,46,"[수능 국어사] 음운: ㅎ종성 체언 ~ 불규칙 활용"],
-  [70,68,"[수능 국어사] 음운: 음운 변동 ~ 형태: 이형태"],
-  [71,40,"[수능 국어사] 형태: 15세기 격조사 ~ 선어말어미 -더-"],
-  [72,73,"[현대소설] 평가원 지문(고1) 프레임 분석 1~2"],
-  [73,65,"[현대소설] 평가원 지문(고1) 프레임 분석 3~7 (중요)"],
-  [74,41,"[현대소설] 평가원 지문(고1) 프레임 분석 8~10"],
-  [75,47,"[현대소설] 평가원 지문(고1) 프레임 분석 11~14"],
-  [76,47,"[현대소설] 평가원 지문(고1) 프레임 분석 15~18"],
-  [77,35,"[현대소설] 평가원 지문(고1) 프레임 분석 19~20"],
-].map(([n,dur,title]) => ({n,dur,title}));
+const SB_URL = "https://lofkanvzgkxkuryntlzx.supabase.co";
+const SB_KEY = "sb_publishable_gDs9FcQYfF7t1p9m-MR03Q_7ghO1RMK";
+const SUBJECT = "전공";
+const FALLBACK_RAW = /*__RAW__*/[{"n": "001", "t": "OT채팅방&요일별 활동 안내 / [화법] 자아개념~자아노출. (본 p.3 / 부 p.3-4) (67분)"}, {"n": "002", "t": "[화법] 협력의 원리~동기화 단계 조직. (본 p.4~8 / 부 p.4~6) (63분)"}, {"n": "003", "t": "[화법] 연설(사례) ~토론과 반대신문(사례). (본 p.9~13 / 부 p.8~14) (47분)"}, {"n": "004", "t": "[음운] 문법 자료 안내 / 종성부용초성, ㅅ과 ㄷ대립, 순경음ㅂ. (p.1~2) (75분)"}, {"n": "005", "t": "[음운] 반치음과 ㅅ불규칙~ 움라우트와 전설모음체계 확립. (p2~5) (71분)"}, {"n": "006", "t": "[문학] 교과서 분석 안내, 교육과정 개관, 문학의 인식적 기능. (교과서 ~ p.13) (53분)"}, {"n": "007", "t": "[문학] 문학 교육의 프레임 개관(판서), 인식적 기능 학습활동. (교과서 p.10~18) (54분)"}, {"n": "008", "t": "[문학] 윤리적 기능, 심미적 기능과 형상화(인물, 배경). (교과서 p.19~31) (38분)"}, {"n": "009", "t": "[현대시] 시어의 의미관계(문맥적 의미, 대립적 이미지). (자료 p.1~5) (61분)"}, {"n": "010", "t": "[현대시] 심상 교육 : 상상력, 추체험, 이미지. (자료 p.5~6) (36분)"}, {"n": "011", "t": "[현대시] 발상 교육 : 비유, 상징, 풍자, 아이러니, 참신함. (자료 p.7~9) (53분)"}, {"n": "012", "t": "심화 컨텐츠 모의고사 1회 A형 1~6번 해설 (A형 p. 1-9) (81분)"}, {"n": "013", "t": "심화 컨텐츠 모의고사 1회 A형 7~12번 해설 (A형 p. 9-16) (42분)"}, {"n": "014", "t": "심화 컨텐츠 모의고사 1회 B형 1~12번 해설 (B형 p. 1-19) (54분)"}, {"n": "015", "t": "[화법] 심화모고 1회 A-2 보충 / 발표 컨텐츠 정리 및 사례 분석. (본 p.2-6 / 부 p.2-5) (70분)"}, {"n": "016", "t": "[화법] 토의 컨텐츠 정리 및 사례 분석. (본 p.7-11 /부 p.6-10) (38분)"}, {"n": "017", "t": "[화법] 답안 작성 지침 안내 / 협상 컨텐츠 정리 및 사례 분석 / 교수학습방법 사례. (본 p.12-14 /부 p.11-17) (64분)"}, {"n": "018", "t": "[음운] 연구개비음과 초성 제약~ㅎ종성체언과 유기음화. (p.6-7) (66분)"}, {"n": "019", "t": "[음운] ㅎ종성체언과 호격조사 하~근대국어 음운 현상 / ㄹ의 ㄴ 비음화. (p.8-13) (47분)"}, {"n": "020", "t": "[형태] 관형격 ㅅ과 사이시옷~15세기 파생접사 (명사화 접사와 명사형 어미). (p.1-3) (38분)"}, {"n": "021", "t": "[문학] 문학의 갈래 (서술자, 자아와 세계), 해석교육과 문학의 맥락. (교과서 p.33-38) (83분)"}, {"n": "022", "t": "[문학] 갈래 (서정, 서시, 극, 교술), 내용과 형식의 유기적 관계, 수용과 생산. (교과서 p.38-86) (53분)"}, {"n": "023", "t": "[문학] 내용과 형식, 수용과 생산 (재구성, 칭작) / 문학교육의 틀 짜기 (판서). (교과서 p.87-116) (24분)"}, {"n": "024", "t": "[현대시] 발상 교육: 아이러니 (반어와 역설). (자료 p.10-11) (56분)"}, {"n": "025", "t": "[현대시] 시상 전개와 형상화 방식 / 현대시 프레임 정리 (판서). (자료 p.11-15) (37분)"}, {"n": "026", "t": "[현대시] 다리 저는 사람 / [현대소설] 핵심 프레임 개관, 인물의 성격화 . (자료 p.21- 25) (56분)"}, {"n": "027", "t": "심화 컨텐츠 모의고사 2회 A형 1~12번 해설 (A형 p. 1-23) (95분)"}, {"n": "028", "t": "2회 A형 7번 정정 / 심화 컨텐츠 모의고사 2회 B형 1~11번 해설 (A형 p. 11 / B형 p. 1-17) (73분)"}, {"n": "029", "t": "[작문] 작문 교육 트렌드의 이해 / 장르 - 정보전달 글 쓰기 컨텐츠. (본 p.2-5) (76분)"}, {"n": "030", "t": "[작문] 장르 - 정보전달 글 쓰기 사례, 설득적 글 쓰기 컨텐츠. (부 p.2-4/ 본 p.6-10) (50분)"}, {"n": "031", "t": "[작문] 장르 - 정보전달 글 쓰기 사례, 설득적 글 쓰기 사례. (부 p.4-16) (60분)"}, {"n": "032", "t": "[형태] 15세기 명사 파생 접사 (vs 명사형 어미 -(으)ㅁ ~ 명사화 vs 부사화 -이). (p.3-4) (60분)"}, {"n": "033", "t": "[형태] 15세기 파생 접사 (X - 하다 ~ -답/롭/스럽-) ~ 15세기 합성어. (p.4-15) (81분)"}, {"n": "034", "t": "[현대소설] 현대소설 프레임 정리와 사례 1.인물 2.plot. (자료 p.23-25) (74분)"}, {"n": "035", "t": "[현대소설] 현대소설 프레임 정리와 사례 3.갈등양상 4.크로노토프(시·공간). (자료 p.25- 31) (62분)"}, {"n": "036", "t": "[현대소설] 현대소설 프레임 정리와 사례 4.크로노토프(시·공간) 5.초점화. (자료 p.32-33) (48분)"}, {"n": "037", "t": "[현대소설] 평가원 기출 목록 확인 / 평가원 지문 프레임 분석 1~2. (지문 p.2-9) (69분)"}, {"n": "038", "t": "[현대소설] 평가원 지문 프레임 분석 3~8. (지문 p.9-27) (81분)"}, {"n": "039", "t": "심화 컨텐츠 모의고사 3회 A형 1~12번 해설 (A형 p.1-22) (90분)"}, {"n": "040", "t": "심화 컨텐츠 모의고사 3회 B형 1~11번 해설 (B형 p.1-14) (88분)"}, {"n": "041", "t": "[작문] 장르 - 학습 작문 (학습적 글쓰기)의 컨텐츠와 사례. (본 p.11-14 / 부 p.2-9) (66분)"}, {"n": "042", "t": "[작문] 장르 - 표현적 글쓰기 컨텐츠 / 문제해결과정 - 계획하기 컨텐츠와 사례, 생성과 조직 컨텐츠. (본 p.15-17, 2-9 / 부 p.14-18) (74분)"}, {"n": "043", "t": "[작문] 문제해결과정 - 생성과 조직 컨텐츠와 사례, 표현과 고쳐쓰기 컨텐츠. (본 p.9-14 / 부 p.19-23) (48분)"}, {"n": "044", "t": "[형태] 문법화와 국어사(부터, 조차, 까지, 엿-, 날-). (p.16) (64분)"}, {"n": "045", "t": "[형태] 국어사 - 활용, 종결어미, 전성어미, 연결어미, 선어말어미(높임, 시제, 의도, 서 법). (p.17-29) (73분)"}, {"n": "046", "t": "[현대소설] 평가원 지문 프레임 분석 1~3. (지문2 p.2-11) (75분)"}, {"n": "047", "t": "[현대소설] 평가원 지문 프레임 분석 4~6. (지문2 p.11-21) (56분)"}, {"n": "048", "t": "[현대소설] 평가원 지문 프레임 분석 6~8. (지문2 p.21-30) (48분)"}, {"n": "049", "t": "[현대소설] 평가원 지문 프레임 분석 9~12. (지문2 p.30-43) (86분)"}, {"n": "050", "t": "[현대소설] 평가원 지문 프레임 분석 13~16 / 3주차 현대소설 지문 프레임 분석 9 . (지문2 p.42-59 / 지문1 p.27-30) (71분)"}, {"n": "051", "t": "심화 컨텐츠 모의고사 4회 A형 1~12번 해설 (A형 p.1-14) (104분)"}, {"n": "052", "t": "심화 컨텐츠 모의고사 4회 B형 1~11번 해설 (B형 p.1-13) (77분)"}, {"n": "053", "t": "[작문] 문제해결과정 - 조정하기와 공유하기 컨텐츠와 사례. (본 p.15-19 / 부 p.28-31) (63분)"}, {"n": "054", "t": "[작문] 교수학습방법 컨텐츠와 작문 이론별 접근 지도법 사례. (본 p.2-6 / 부 p.2-5) (64분)"}, {"n": "055", "t": "[작문] 교수학습방법 - 직접 교수법 ~ 협동 작문 사례 / 평가 컨텐츠와 총체적·분석적 평가 사례. (부 p.5-11 / 본 p.7-9) (44분)"}, {"n": "056", "t": "[통사] 인칭법 -오- ~ 논항 구조의 변화(주다, 삼다). (p.1-2) (59분)"}, {"n": "057", "t": "[통사] 접속문 구성 ~ 피동법의 변화 / [수능 국어사] 음운 : 모음체계 ~ 자음체계. (p.3-9 / 수능 p.2-3) (49분)"}, {"n": "058", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 1~4. (지문3 p.2-14) (84분)"}, {"n": "059", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 5~6 (성장소설). (지문3 p.14-20) (53분)"}, {"n": "060", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 7~9. (지문3 p.20-29) (48분)"}, {"n": "061", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 10~13. (지문3 p.30-45) (66분)"}, {"n": "062", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 13(소시민의 양상)~17. (지문3 p.45-59) (50분)"}, {"n": "063", "t": "[현대소설] 평가원 지문(고2) 프레임 분석 18~20. (지문3 p.59-70) (29분)"}, {"n": "064", "t": "심화 컨텐츠 모의고사 5회 A형 1~12번 해설 (A형 p.1-18) (101분)"}, {"n": "065", "t": "심화 컨텐츠 모의고사 5회 B형 1~11번 해설 (B형 p.1-17) (73분)"}, {"n": "066", "t": "[작문] 평가 - 평가 방법별 사레, 평가의 타당도와 신뢰도 사레. (부 p.12-16) (78분)"}, {"n": "067", "t": "[독서] 본질 - 읽기의 원리, 독서 모형의 컨텐츠와 사례 분석. (본 p.2-4 / 부 p.2-4) (47분)"}, {"n": "068", "t": "[독서] 본질 - 독서 능력과 기능 및 전략의 컨텐츠와 사례 분석(바렛, 어윈). (본 p.4-5 / 부 p.5-7) (47분)"}, {"n": "069", "t": "[수능 국어사] 음운: ㅎ종성 체언 ~ 불규칙 활용. (수능 p.3-4) (46분)"}, {"n": "070", "t": "[수능 국어사] 음운: 음운 변동 ~ 형태: 이형태. (수능 p.5-13 / 한문총2 p.403) (68분)"}, {"n": "071", "t": "[수능 국어사] 형태: 15세기 격조사 ~ 선어말어미 -더-. (수능 p.13-20) (40분)"}, {"n": "072", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 1~2. (지문4 p.2-8) (73분)"}, {"n": "073", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 3-7. (중요) (지문4 p.9-25) (65분)"}, {"n": "074", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 8-10. (지문4 p.25-35) (41분)"}, {"n": "075", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 11~14. (지문4 p.36~48) (47분)"}, {"n": "076", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 15~18. (지문4 p.49~62) (47분)"}, {"n": "077", "t": "[현대소설] 평가원 지문(고1) 프레임 분석 19~20. (지문4 p.62~68) (35분)"}, {"n": "078", "t": "심화 컨텐츠 모의고사 6회 A형 1~12번 해설 (A형 p.1-17) (107분)"}, {"n": "079", "t": "심화 컨텐츠 모의고사 6회 B형 1~11번 해설 (A형 p.1-14) (68분)"}];
 
 const SPEEDS = [1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4];
 const DEFAULT_DAYS = [
@@ -254,12 +191,39 @@ const DEFAULT_DAYS = [
 ];
 const WEEKDAYS = ["일","월","화","수","목","금","토"];
 
+// ---------- 강의 데이터 ----------
+// raw: [{n:"018", t:"제목 (66분)"}] → 모의고사 자동 제외, (NN분) 파싱
+function toLecs(raw){
+  const all = raw.map(r => {
+    const m = (r.t || "").match(/\((\d+)\s*분\)\s*$/);
+    return {
+      n: parseInt(r.n, 10),
+      dur: m ? Number(m[1]) : 60,
+      noDur: !m,
+      title: (r.t || "").replace(/\s*\(\d+\s*분\)\s*$/, ""),
+      mock: /모의고사/.test(r.t || ""),
+    };
+  }).sort((a,b) => a.n - b.n);
+  return {lecs: all.filter(l => !l.mock), mocks: all.filter(l => l.mock)};
+}
+let LECS = [], MOCKS = [];
+function applyRaw(raw){ const r = toLecs(raw); LECS = r.lecs; MOCKS = r.mocks; }
+
+async function fetchLive(){
+  const url = `${SB_URL}/rest/v1/imyong_lectures?subject=eq.${encodeURIComponent(SUBJECT)}&select=number,title&order=number`;
+  const res = await fetch(url, {headers: {apikey: SB_KEY, Authorization: "Bearer " + SB_KEY}});
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const rows = await res.json();
+  if (!Array.isArray(rows) || !rows.length) throw new Error("empty");
+  return rows.map(r => ({n: r.number, t: r.title}));
+}
+
 function parseD(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
 function fmtDate(s){ const dt = parseD(s); return `${dt.getMonth()+1}/${dt.getDate()} (${WEEKDAYS[dt.getDay()]})`; }
 function fmt(sec){ const m = Math.round(sec/60); return Math.floor(m/60) + "h " + String(m%60).padStart(2,"0") + "m"; }
 function fmtMin(sec){ return Math.round(sec/60) + "분"; }
 
-// 스케줄러: 시작 강의부터, 날짜별 가용시간에 순서대로 배치 (split=이어듣기)
+// ---------- 스케줄러: 시작 강의부터, 날짜별 가용시간에 순서대로 배치 ----------
 function computeSchedule({speed, split, startN, days}){
   const lecs = LECS.filter(l => l.n >= startN);
   const out = days.map(d => ({...d, items: [], spareSec: 0, overSec: 0}));
@@ -318,27 +282,26 @@ function rowHTML(it){
   let tags = "";
   if (from > 0) tags += ` <span class="tag cont">${from}분~ 이어듣기</span>`;
   if (to < lec.dur) tags += ` <span class="tag cut">~${to}분까지</span>`;
+  if (lec.noDur) tags += ` <span class="tag cut" style="background:var(--warn)">길이 미상→60분 가정</span>`;
   const durTxt = partial ? `${to-from}/${lec.dur}분` : `${lec.dur}분`;
   return `<tr class="${partial ? "split" : ""}"><td class="num">${lec.n}강</td><td class="title">${lec.title}${tags}</td><td class="dur">${durTxt}</td></tr>`;
 }
 
 function render(){
   sortDays();
+  if (state.startN && !LECS.some(l => l.n >= state.startN) && LECS.length) state.startN = LECS[0].n;
   const {days, leftover, lecs} = computeSchedule(state);
 
-  // 필터 칩
   document.getElementById("speedChips").innerHTML = SPEEDS.map(s =>
     `<button class="chip ${s===1.0?'base ':''}${s===state.speed?'on':''}" onclick="setSpeed(${s})">${s.toFixed(2).replace(/0$/,'')}×${s===1.0?' <small>정배</small>':''}</button>`
   ).join(" ");
   document.getElementById("splitOn").className  = "chip" + (state.split ? " on" : "");
   document.getElementById("splitOff").className = "chip" + (!state.split ? " on" : "");
 
-  // 시작 강의 셀렉트
   document.getElementById("startSel").innerHTML = LECS.map(l =>
-    `<option value="${l.n}" ${l.n===state.startN?"selected":""}>${l.n}강부터${l.n===18?" (처음부터)":""}</option>`
+    `<option value="${l.n}" ${l.n===state.startN?"selected":""}>${l.n}강부터${l.n===LECS[0].n?" (처음부터)":""}</option>`
   ).join("");
 
-  // 날짜 편집 UI
   document.getElementById("dayRows").innerHTML = state.days.map((d, i) => `
     <div class="dayrow">
       <span class="wk">${WEEKDAYS[parseD(d.d).getDay()]}</span>
@@ -347,7 +310,6 @@ function render(){
       <button class="delbtn" onclick="delDay(${i})" title="이 날짜 삭제">✕</button>
     </div>`).join("");
 
-  // 통계
   const totalVideo = lecs.reduce((s,l)=>s+l.dur,0);
   const needSec = totalVideo * 60 / state.speed;
   const availSec = state.days.reduce((s,d)=>s+d.h,0) * 3600;
@@ -361,11 +323,10 @@ function render(){
     <div class="stat"><div class="label">계획 이후 잔여</div><div class="value">${leftover.length ? fmt(leftRealSec) : "없음 🎉"}</div></div>
     <div class="stat"><div class="label">계획 내 빈 시간</div><div class="value">${fmt(spareSec)}</div></div>`;
 
-  // 안내문
   const emptyDays = days.filter(d => !d.items.length).map(d => fmtDate(d.d));
   let notice;
   if (!lecs.length){
-    notice = `<div class="notice ok">✅ 시작 강의가 마지막 강의보다 뒤예요 — 남은 강의가 없어요!</div>`;
+    notice = `<div class="notice ok">✅ 시작 강의 기준으로 남은 강의가 없어요!</div>`;
   } else if (leftover.length){
     const first = leftover[0].lec.n, last = leftover[leftover.length-1].lec.n;
     notice = `<div class="notice warn">⚠️ ${state.speed}× 기준 계획한 날짜로 부족 — <b>${first}강${last!==first?`~${last}강`:""} (실제 약 ${fmt(leftRealSec)})</b>이 계획 밖으로 남아요. 날짜를 추가하거나 배속을 올려보세요.</div>`;
@@ -376,7 +337,6 @@ function render(){
   }
   document.getElementById("notice").innerHTML = notice;
 
-  // 날짜 카드
   let html = days.map(d => {
     const usedSec = d.h*3600 - d.spareSec + d.overSec;
     let fill;
@@ -391,10 +351,15 @@ function render(){
   }).join("");
 
   if (leftover.length){
-    const leftVideoMin2 = leftover.reduce((s,it)=>s+(it.to-it.from),0);
-    html += `<div class="day overflow"><div class="day-head"><span class="date">📌 계획 이후 잔여</span><span class="fill"><span class="over">실제 약 ${fmt(leftVideoMin2*60/state.speed)}</span></span></div><table>${leftover.map(rowHTML).join("")}</table></div>`;
+    html += `<div class="day overflow"><div class="day-head"><span class="date">📌 계획 이후 잔여</span><span class="fill"><span class="over">실제 약 ${fmt(leftRealSec)}</span></span></div><table>${leftover.map(rowHTML).join("")}</table></div>`;
   }
   document.getElementById("days").innerHTML = html;
+
+  // 제외 목록 (자동)
+  const mockTotal = MOCKS.reduce((s,l)=>s+l.dur,0);
+  document.getElementById("excluded").innerHTML = `
+    <h2>🚫 자동 제외된 모의고사 강의 — 총 ${MOCKS.length}강 (영상 ${fmt(mockTotal*60)})</h2>
+    <ul>${MOCKS.map(l => `<li><b>${l.n}강</b> ${l.title} (${l.dur}분)</li>`).join("")}</ul>`;
 }
 
 function setSpeed(s){ state.speed = s; save(); render(); }
@@ -426,7 +391,19 @@ document.getElementById("resetPlan").onclick = () => {
 document.getElementById("startSel").onchange = (e) => { state.startN = Number(e.target.value); save(); render(); };
 document.getElementById("splitOn").onclick  = () => { state.split = true;  save(); render(); };
 document.getElementById("splitOff").onclick = () => { state.split = false; save(); render(); };
+
+// ---------- 시작: 내장 스냅샷으로 먼저 그리고, 실시간 목록으로 갱신 ----------
+const badge = document.getElementById("srcBadge");
+applyRaw(FALLBACK_RAW);
 render();
+fetchLive().then(raw => {
+  applyRaw(raw);
+  badge.textContent = `실시간 강의 목록 ✓ ${SUBJECT} ${raw.length}강`;
+  badge.className = "srcbadge live";
+  render();
+}).catch(() => {
+  badge.textContent = `오프라인 — 내장 목록(${FALLBACK_RAW.length}강) 사용`;
+});
 </script>
 </body>
 </html>
