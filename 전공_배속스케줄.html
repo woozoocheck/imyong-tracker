@@ -131,11 +131,12 @@
   <div class="topbar">
     <a class="backbtn" href="index.html">← 진도판으로</a>
     <span class="srcbadge" id="srcBadge">강의 목록 불러오는 중…</span>
+    <span class="srcbadge" id="syncBadge">☁️ 설정 동기화 중…</span>
   </div>
   <h1>📚 전공국어 진도 스케줄 <span style="font-size:15px;color:var(--accent)">· 배속 플래너</span></h1>
   <p class="subtitle">모의고사 강의는 자동 제외 · 표의 「분」은 영상 기준, 합계는 실제 소요시간<br>
   강의 목록은 진도판과 같은 데이터를 실시간으로 읽어요 — <b>진도판 업데이트 커맨드를 돌리면 여기도 자동 반영</b>됩니다.<br>
-  날짜·시간·시작 강의를 바꾸면 스케줄이 바로 다시 짜지고, 설정은 이 기기에 자동 저장돼요.</p>
+  날짜·시간·시작 강의를 바꾸면 스케줄이 바로 다시 짜지고, 설정은 자동 저장 + 모든 기기에 동기화돼요.</p>
 
   <div class="filters">
     <div class="filter-row">
@@ -174,7 +175,7 @@
     · 이어듣기 켬: 하루 시간이 다 차면 그 지점(영상 분)에서 끊고 다음 날 이어듣기. 남은 꼬리가 실제 10분 미만이면 그냥 끝까지 봄(약간 초과 허용).<br>
     · 이어듣기 끔: 통강의만 배치 → 각 날에 자투리 여유가 남고 전체 진도가 뒤로 밀림.<br>
     · 끊는 지점은 계산상 기준이라 근처 소단원 끝에서 ±2~3분 조절해도 지장 없음.<br>
-    · 설정은 이 브라우저(localStorage)에만 저장 — 기기를 바꾸면 다시 입력해야 해요.
+    · 설정(날짜·시간·배속·시작 강의)은 Supabase(imyong_kv)로 폰·맥·윈도우 동기화 — 최신 수정이 우선. 오프라인이면 이 기기에만 저장했다가 다음 접속 때 올라감.
   </div>
 </div>
 
@@ -273,8 +274,45 @@ function loadState(){
   return defaultState();
 }
 let state = loadState();
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function saveLocal(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function save(){ state.ts = Date.now(); saveLocal(); kvPush(); }
 function sortDays(){ state.days.sort((a,b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0); }
+
+// ── 설정 동기화 (imyong_kv, key='speedplan', 최신 타임스탬프 우선) ──
+const KVKEY = "speedplan";
+function syncMsg(t, ok){
+  const el = document.getElementById("syncBadge");
+  if (el){ el.textContent = t; el.className = "srcbadge" + (ok ? " live" : ""); }
+}
+async function kvGet(){
+  const r = await fetch(`${SB_URL}/rest/v1/imyong_kv?key=eq.${KVKEY}&select=value`,
+    {headers: {apikey: SB_KEY, Authorization: "Bearer " + SB_KEY}});
+  if (!r.ok) throw new Error(r.status);
+  const j = await r.json(); return j.length ? j[0].value : null;
+}
+let pushT = null;
+function kvPush(){
+  clearTimeout(pushT);
+  pushT = setTimeout(() => {
+    fetch(`${SB_URL}/rest/v1/imyong_kv?on_conflict=key`, {method: "POST",
+      headers: {apikey: SB_KEY, Authorization: "Bearer " + SB_KEY,
+                "Content-Type": "application/json", Prefer: "resolution=merge-duplicates"},
+      body: JSON.stringify([{key: KVKEY, value: state, updated_at: new Date().toISOString()}])})
+      .then(r => syncMsg(r.ok ? "☁️ 설정 저장됨" : "☁️ 저장 실패", r.ok))
+      .catch(() => syncMsg("☁️ 오프라인(이 기기 저장)", false));
+  }, 700);
+}
+async function syncCheck(first){
+  try {
+    const v = await kvGet();
+    if (v && Array.isArray(v.days) && (v.ts || 0) > (state.ts || 0)){
+      state = v; saveLocal(); render();
+      syncMsg("☁️ 설정 동기화 ✓", true); return;
+    }
+    if (first && !v && state.ts){ kvPush(); return; }
+    syncMsg("☁️ 설정 동기화 ✓", true);
+  } catch(e){ syncMsg("☁️ 오프라인(이 기기 저장)", false); }
+}
 
 function rowHTML(it){
   const {lec, from, to} = it;
@@ -404,6 +442,8 @@ fetchLive().then(raw => {
 }).catch(() => {
   badge.textContent = `오프라인 — 내장 목록(${FALLBACK_RAW.length}강) 사용`;
 });
+syncCheck(true);
+setInterval(() => syncCheck(false), 60000);
 </script>
 </body>
 </html>

@@ -117,6 +117,7 @@ tr:last-child td{border-bottom:none}
   <button id="expBtn" title="현재 기록을 JSON 파일로 저장">📥 내보내기</button>
   <button id="impBtn" title="이전에 내보낸 JSON 불러오기">📤 불러오기</button>
   <span class="summary" id="summary">기록 없음</span>
+  <span id="cloudst" style="font-size:11px;color:#6b7280;white-space:nowrap"></span>
 </div>
 <p class="note">좌측 상태버튼: 클릭 순환 <b>없음 → ✓완료 → ~부분 → ✗안 함</b>. 우측 <b>＋ 메모 추가</b>로 하루에 여러 메모 저장(각 메모마다 수정/삭제, 일요일 포함). 이 브라우저에만 저장 — 정기적으로 <b>내보내기</b>로 백업.</p>
 <div class="legend">
@@ -312,8 +313,28 @@ tr:last-child td{border-bottom:none}
 <script>
 (function(){
   const KEY='imyong_daily_v1', YEAR=2026;
+  // ── Supabase 동기화 (imyong_kv, key='daycal', 최신 타임스탬프 우선) ──
+  const SBU='https://lofkanvzgkxkuryntlzx.supabase.co', SBK='sb_publishable_gDs9FcQYfF7t1p9m-MR03Q_7ghO1RMK', KVKEY='daycal';
   let data={}; try{data=JSON.parse(localStorage.getItem(KEY)||'{}');}catch(e){data={};}
-  function save(){localStorage.setItem(KEY,JSON.stringify(data));}
+  let ts=Number(localStorage.getItem(KEY+'_ts')||0);
+  function cloudMsg(t,ok){const el=document.getElementById('cloudst');if(el){el.textContent=t;el.style.color=ok?'#047857':'#6b7280';}}
+  async function kvGet(){
+    const r=await fetch(SBU+'/rest/v1/imyong_kv?key=eq.'+KVKEY+'&select=value',{headers:{apikey:SBK,Authorization:'Bearer '+SBK}});
+    if(!r.ok) throw new Error(r.status);
+    const j=await r.json(); return j.length?j[0].value:null;
+  }
+  let pushT=null;
+  function kvPush(){
+    clearTimeout(pushT);
+    pushT=setTimeout(()=>{
+      fetch(SBU+'/rest/v1/imyong_kv?on_conflict=key',{method:'POST',
+        headers:{apikey:SBK,Authorization:'Bearer '+SBK,'Content-Type':'application/json',Prefer:'resolution=merge-duplicates'},
+        body:JSON.stringify([{key:KVKEY,value:{ts:ts,data:data},updated_at:new Date().toISOString()}])})
+        .then(r=>cloudMsg(r.ok?'☁️ 저장됨':'☁️ 저장 실패',r.ok))
+        .catch(()=>cloudMsg('☁️ 오프라인(이 기기 저장)',false));
+    },700);
+  }
+  function save(){ts=Date.now();localStorage.setItem(KEY,JSON.stringify(data));localStorage.setItem(KEY+'_ts',String(ts));kvPush();}
   function ent(d){
     if(!data[d]) data[d]={blocks:{},memos:[]};
     // v1(단일 memo) → v2(memos 배열) 마이그레이션
@@ -446,6 +467,25 @@ tr:last-child td{border-bottom:none}
     };
     inp.click();
   });
+  // ── 원격 동기화: 열 때 최신본 확인, 이후 60초마다 (메모 작성 중엔 새로고침 보류) ──
+  function adoptRemote(v){
+    localStorage.setItem(KEY,JSON.stringify(v.data||{}));
+    localStorage.setItem(KEY+'_ts',String(v.ts||Date.now()));
+    location.reload();
+  }
+  async function cloudCheck(first){
+    try{
+      const v=await kvGet();
+      if(v&&(v.ts||0)>ts){ if(!document.querySelector('.memoedit textarea')) adoptRemote(v); return; }
+      if(first&&!v&&Object.keys(data).length){
+        if(!ts){ts=Date.now();localStorage.setItem(KEY+'_ts',String(ts));}
+        kvPush(); return;
+      }
+      cloudMsg('☁️ 동기화 ✓',true);
+    }catch(e){ cloudMsg('☁️ 오프라인(이 기기 저장)',false); }
+  }
+  cloudCheck(true);
+  setInterval(()=>cloudCheck(false),60000);
 })();
 </script>
 </div></body></html>
