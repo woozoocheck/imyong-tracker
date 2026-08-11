@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전공국어 18~79강 스케줄 (8/11~8/17) · 배속 필터판</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #1f2430; --sub: #6b7280;
+    --accent: #4f6df5; --accent-soft: #eef1fe; --line: #e5e7eb;
+    --warn: #b45309; --warn-bg: #fef3c7; --ok: #047857; --ok-bg: #d1fae5;
+    --future: #7c3aed; --future-bg: #f3e8ff;
+    --split: #db2777; --split-bg: #fdf2f8;
+    --free: #0891b2; --free-bg: #ecfeff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
+    background: var(--bg); color: var(--ink); padding: 32px 16px 64px;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; }
+  h1 { font-size: 26px; margin-bottom: 6px; }
+  .subtitle { color: var(--sub); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+
+  .filters {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 18px; position: sticky; top: 8px; z-index: 10;
+    box-shadow: 0 4px 14px rgba(31,36,48,.06);
+  }
+  .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filter-row + .filter-row { margin-top: 10px; }
+  .filter-label { font-size: 13px; font-weight: 700; color: var(--sub); width: 64px; }
+  .chip {
+    border: 1px solid var(--line); background: #fff; color: var(--ink);
+    border-radius: 99px; padding: 6px 13px; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all .12s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .chip.base.on { background: var(--ink); border-color: var(--ink); }
+  .chip small { font-weight: 500; opacity: .75; }
+
+  .summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 13px 16px; flex: 1; min-width: 140px;
+  }
+  .stat .label { font-size: 12px; color: var(--sub); margin-bottom: 4px; }
+  .stat .value { font-size: 19px; font-weight: 700; }
+
+  .notice { border-radius: 12px; padding: 13px 18px; margin-bottom: 16px; font-size: 14px; line-height: 1.7; }
+  .notice.ok { background: var(--ok-bg); color: var(--ok); }
+  .notice.warn { background: var(--warn-bg); color: var(--warn); }
+
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 16px; overflow: hidden; }
+  .day-head {
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+    padding: 13px 18px; background: var(--accent-soft); border-bottom: 1px solid var(--line);
+  }
+  .day-head .date { font-size: 17px; font-weight: 800; color: var(--accent); }
+  .day-head .budget { font-size: 13px; color: var(--sub); }
+  .day-head .fill { margin-left: auto; font-size: 13px; font-weight: 700; }
+  .fill .full { color: var(--ok); }
+  .fill .over { color: var(--warn); }
+  .fill .spare { color: var(--free); }
+
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 9px 18px; font-size: 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  tr:first-child td { border-top: none; }
+  td.num { width: 56px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  td.dur { width: 84px; text-align: right; color: var(--sub); white-space: nowrap; }
+  td.title { line-height: 1.5; }
+  tr.split { background: var(--split-bg); }
+  tr.split td.num { color: var(--split); }
+  tr.future { background: var(--future-bg); }
+  tr.future td.num { color: var(--future); }
+  tr.freerow td { color: var(--free); font-weight: 600; background: var(--free-bg); }
+  .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
+  .tag.cut { background: var(--split); color: #fff; }
+  .tag.cont { background: #fff; color: var(--split); border: 1px solid var(--split); }
+  .tag.future { background: var(--future); color: #fff; }
+
+  .day.emptyday .day-head { background: var(--free-bg); }
+  .day.emptyday .day-head .date { color: var(--free); }
+  .day.overflow .day-head { background: var(--warn-bg); }
+  .day.overflow .day-head .date { color: var(--warn); }
+
+  .excluded { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; margin-top: 28px; }
+  .excluded h2 { font-size: 16px; margin-bottom: 10px; }
+  .excluded ul { list-style: none; }
+  .excluded li { font-size: 14px; padding: 5px 0; color: var(--sub); }
+  .excluded li b { color: var(--ink); }
+  .foot { margin-top: 24px; font-size: 12px; color: var(--sub); line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📚 전공국어 18~79강 스케줄 <span style="font-size:16px;color:var(--accent)">· 배속 필터판</span></h1>
+  <p class="subtitle">2026. 8. 11.(화) ~ 8. 17.(월) · 모의고사 10강 제외한 52강 (영상 총 50시간 25분)<br>
+  78·79강은 모의고사 6회 해설로 확인되어 제외 · 표의 「분」은 영상 기준, 합계는 실제 소요시간</p>
+
+  <div class="filters">
+    <div class="filter-row">
+      <span class="filter-label">배속</span>
+      <div id="speedChips"></div>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">이어듣기</span>
+      <button class="chip" id="splitOn">켬 <small>(강의를 날짜 경계에서 끊음)</small></button>
+      <button class="chip" id="splitOff">끔 <small>(통강의만)</small></button>
+    </div>
+  </div>
+
+  <div class="summary" id="stats"></div>
+  <div id="notice"></div>
+  <div id="days"></div>
+
+  <div class="excluded">
+    <h2>🚫 제외한 모의고사 강의 — 총 13강 (영상 17시간 33분)</h2>
+    <ul>
+      <li><b>12강</b> 심화 컨텐츠 모의고사 1회 A형 1~6번 해설 (81분) — 스케줄 범위(18강~) 이전</li>
+      <li><b>13강</b> 심화 컨텐츠 모의고사 1회 A형 7~12번 해설 (42분) — 스케줄 범위 이전</li>
+      <li><b>14강</b> 심화 컨텐츠 모의고사 1회 B형 1~12번 해설 (54분) — 스케줄 범위 이전</li>
+      <li><b>27강</b> 심화 컨텐츠 모의고사 2회 A형 1~12번 해설 (95분)</li>
+      <li><b>28강</b> 2회 A형 7번 정정 / 모의고사 2회 B형 1~11번 해설 (73분)</li>
+      <li><b>39강</b> 심화 컨텐츠 모의고사 3회 A형 1~12번 해설 (90분)</li>
+      <li><b>40강</b> 심화 컨텐츠 모의고사 3회 B형 1~11번 해설 (88분)</li>
+      <li><b>51강</b> 심화 컨텐츠 모의고사 4회 A형 1~12번 해설 (104분)</li>
+      <li><b>52강</b> 심화 컨텐츠 모의고사 4회 B형 1~11번 해설 (77분)</li>
+      <li><b>64강</b> 심화 컨텐츠 모의고사 5회 A형 1~12번 해설 (101분)</li>
+      <li><b>65강</b> 심화 컨텐츠 모의고사 5회 B형 1~11번 해설 (73분)</li>
+      <li><b>78강</b> 심화 컨텐츠 모의고사 6회 A형 1~12번 해설 (107분) — 8/14 업데이트분</li>
+      <li><b>79강</b> 심화 컨텐츠 모의고사 6회 B형 1~11번 해설 (68분) — 8/14 업데이트분</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    · 이어듣기 켬: 하루 시간이 다 차면 그 지점(영상 분)에서 끊고 다음 날 이어듣기. 남은 꼬리가 실제 10분 미만이면 그냥 끝까지 봄(약간 초과 허용).<br>
+    · 이어듣기 끔: 통강의만 배치 → 각 날에 자투리 여유가 남고 전체 진도가 뒤로 밀림.<br>
+    · 끊는 지점은 계산상 기준이라 근처 소단원 끝에서 ±2~3분 조절해도 지장 없음.<br>
+    · 78·79강은 8/14 업데이트로 공개 확인 — 모의고사 6회 해설이라 제외 목록으로 이동.
+  </div>
+</div>
+
+<script>
+const LECS = [
+  [18,66,"[음운] 연구개비음과 초성 제약~ㅎ종성체언과 유기음화"],
+  [19,47,"[음운] ㅎ종성체언과 호격조사 하~근대국어 음운 현상 / ㄹ의 ㄴ 비음화"],
+  [20,38,"[형태] 관형격 ㅅ과 사이시옷~15세기 파생접사"],
+  [21,83,"[문학] 문학의 갈래 (서술자, 자아와 세계), 해석교육과 문학의 맥락"],
+  [22,53,"[문학] 갈래 (서정, 서사, 극, 교술), 내용과 형식, 수용과 생산"],
+  [23,24,"[문학] 내용과 형식, 수용과 생산 / 문학교육의 틀 짜기"],
+  [24,56,"[현대시] 발상 교육: 아이러니 (반어와 역설)"],
+  [25,37,"[현대시] 시상 전개와 형상화 방식 / 현대시 프레임 정리"],
+  [26,56,"[현대시] 다리 저는 사람 / [현대소설] 핵심 프레임 개관, 인물의 성격화"],
+  [29,76,"[작문] 작문 교육 트렌드의 이해 / 장르 - 정보전달 글쓰기 컨텐츠"],
+  [30,50,"[작문] 장르 - 정보전달 글쓰기 사례, 설득적 글쓰기 컨텐츠"],
+  [31,60,"[작문] 장르 - 정보전달 글쓰기 사례, 설득적 글쓰기 사례"],
+  [32,60,"[형태] 15세기 명사 파생 접사 (vs 명사형 어미 -(으)ㅁ ~ 부사화 -이)"],
+  [33,81,"[형태] 15세기 파생 접사 (X-하다 ~ -답/롭/스럽-) ~ 15세기 합성어"],
+  [34,74,"[현대소설] 프레임 정리와 사례 1.인물 2.plot"],
+  [35,62,"[현대소설] 프레임 정리와 사례 3.갈등양상 4.크로노토프(시·공간)"],
+  [36,48,"[현대소설] 프레임 정리와 사례 4.크로노토프 5.초점화"],
+  [37,69,"[현대소설] 평가원 기출 목록 확인 / 평가원 지문 프레임 분석 1~2"],
+  [38,81,"[현대소설] 평가원 지문 프레임 분석 3~8"],
+  [41,66,"[작문] 장르 - 학습 작문(학습적 글쓰기)의 컨텐츠와 사례"],
+  [42,74,"[작문] 표현적 글쓰기 / 문제해결과정 - 계획하기, 생성과 조직"],
+  [43,48,"[작문] 문제해결과정 - 생성과 조직, 표현과 고쳐쓰기 컨텐츠"],
+  [44,64,"[형태] 문법화와 국어사(부터, 조차, 까지, 엿-, 날-)"],
+  [45,73,"[형태] 국어사 - 활용, 종결어미, 전성어미, 연결어미, 선어말어미"],
+  [46,75,"[현대소설] 평가원 지문 프레임 분석 1~3 (지문2)"],
+  [47,56,"[현대소설] 평가원 지문 프레임 분석 4~6 (지문2)"],
+  [48,48,"[현대소설] 평가원 지문 프레임 분석 6~8 (지문2)"],
+  [49,86,"[현대소설] 평가원 지문 프레임 분석 9~12 (지문2)"],
+  [50,71,"[현대소설] 평가원 지문 프레임 분석 13~16 / 3주차 지문 분석 9"],
+  [53,63,"[작문] 문제해결과정 - 조정하기와 공유하기 컨텐츠와 사례"],
+  [54,64,"[작문] 교수학습방법 컨텐츠와 작문 이론별 접근 지도법 사례"],
+  [55,44,"[작문] 직접 교수법 ~ 협동 작문 / 평가 컨텐츠와 총체적·분석적 평가"],
+  [56,59,"[통사] 인칭법 -오- ~ 논항 구조의 변화(주다, 삼다)"],
+  [57,49,"[통사] 접속문 구성 ~ 피동법의 변화 / [수능 국어사] 음운: 모음·자음체계"],
+  [58,84,"[현대소설] 평가원 지문(고2) 프레임 분석 1~4"],
+  [59,53,"[현대소설] 평가원 지문(고2) 프레임 분석 5~6 (성장소설)"],
+  [60,48,"[현대소설] 평가원 지문(고2) 프레임 분석 7~9"],
+  [61,66,"[현대소설] 평가원 지문(고2) 프레임 분석 10~13"],
+  [62,50,"[현대소설] 평가원 지문(고2) 프레임 분석 13(소시민의 양상)~17"],
+  [63,29,"[현대소설] 평가원 지문(고2) 프레임 분석 18~20"],
+  [66,78,"[작문] 평가 - 평가 방법별 사례, 평가의 타당도와 신뢰도 사례"],
+  [67,47,"[독서] 본질 - 읽기의 원리, 독서 모형의 컨텐츠와 사례 분석"],
+  [68,47,"[독서] 본질 - 독서 능력과 기능 및 전략 (바렛, 어윈)"],
+  [69,46,"[수능 국어사] 음운: ㅎ종성 체언 ~ 불규칙 활용"],
+  [70,68,"[수능 국어사] 음운: 음운 변동 ~ 형태: 이형태"],
+  [71,40,"[수능 국어사] 형태: 15세기 격조사 ~ 선어말어미 -더-"],
+  [72,73,"[현대소설] 평가원 지문(고1) 프레임 분석 1~2"],
+  [73,65,"[현대소설] 평가원 지문(고1) 프레임 분석 3~7 (중요)"],
+  [74,41,"[현대소설] 평가원 지문(고1) 프레임 분석 8~10"],
+  [75,47,"[현대소설] 평가원 지문(고1) 프레임 분석 11~14"],
+  [76,47,"[현대소설] 평가원 지문(고1) 프레임 분석 15~18"],
+  [77,35,"[현대소설] 평가원 지문(고1) 프레임 분석 19~20"],
+].map(([n,dur,title,est]) => ({n,dur,title,est:!!est}));
+
+const DAYS = [
+  {date:"8/11 (화)", min:180},
+  {date:"8/12 (수)", min:480},
+  {date:"8/13 (목)", min:480},
+  {date:"8/14 (금)", min:480},
+  {date:"8/15 (토)", min:600},
+  {date:"8/16 (일)", min:600},
+  {date:"8/17 (월)", min:300},
+];
+const SPEEDS = [1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4];
+const TOTAL_VIDEO = LECS.reduce((s,l)=>s+l.dur,0);
+
+let speed = 1.0, split = true;
+
+function fmt(sec){
+  const m = Math.round(sec/60);
+  return Math.floor(m/60) + "h " + String(m%60).padStart(2,"0") + "m";
+}
+function fmtMin(sec){ return Math.round(sec/60) + "분"; }
+
+function computeSchedule(){
+  const days = DAYS.map(d => ({...d, items: [], spareSec: 0, overSec: 0}));
+  let i = 0, offset = 0; // offset: 이미 본 영상 분
+  for (const day of days){
+    let cap = day.min * 60; // 남은 실제 초
+    while (i < LECS.length && cap > 30){
+      const lec = LECS[i];
+      const remVideo = lec.dur - offset;
+      const remReal = remVideo * 60 / speed;
+      if (remReal <= cap + 1){
+        day.items.push({lec, from: offset, to: lec.dur});
+        cap -= remReal; i++; offset = 0;
+      } else if (!split){
+        break;
+      } else if (remReal - cap < 600){ // 꼬리가 실제 10분 미만이면 끝까지 (초과 허용)
+        day.items.push({lec, from: offset, to: lec.dur});
+        cap -= remReal; i++; offset = 0;
+        break;
+      } else {
+        const watchVideo = Math.floor(cap * speed / 60);
+        if (watchVideo <= 0) break;
+        day.items.push({lec, from: offset, to: offset + watchVideo});
+        offset += watchVideo; cap -= watchVideo * 60 / speed;
+        break;
+      }
+    }
+    day.spareSec = Math.max(0, cap);
+    day.overSec = Math.max(0, -cap);
+  }
+  const leftover = [];
+  if (i < LECS.length){
+    leftover.push({lec: LECS[i], from: offset, to: LECS[i].dur});
+    for (let j = i+1; j < LECS.length; j++) leftover.push({lec: LECS[j], from: 0, to: LECS[j].dur});
+  }
+  return {days, leftover};
+}
+
+function rowHTML(it){
+  const {lec, from, to} = it;
+  const partial = from > 0 || to < lec.dur;
+  const cls = [partial ? "split" : "", lec.est ? "future" : ""].join(" ").trim();
+  let tags = "";
+  if (from > 0) tags += ` <span class="tag cont">${from}분~ 이어듣기</span>`;
+  if (to < lec.dur) tags += ` <span class="tag cut">~${to}분까지</span>`;
+  if (lec.est && !partial) tags += ` <span class="tag future">추정</span>`;
+  const durTxt = partial ? `${to-from}/${lec.dur}분` : `${lec.dur}분`;
+  return `<tr class="${cls}"><td class="num">${lec.n}강</td><td class="title">${lec.title}${tags}</td><td class="dur">${durTxt}</td></tr>`;
+}
+
+function render(){
+  const {days, leftover} = computeSchedule();
+
+  // 필터 칩
+  document.getElementById("speedChips").innerHTML = SPEEDS.map(s =>
+    `<button class="chip ${s===1.0?'base ':''}${s===speed?'on':''}" onclick="setSpeed(${s})">${s.toFixed(2).replace(/0$/,'')}×${s===1.0?' <small>정배</small>':''}</button>`
+  ).join(" ");
+  document.getElementById("splitOn").className  = "chip" + (split ? " on" : "");
+  document.getElementById("splitOff").className = "chip" + (!split ? " on" : "");
+
+  // 통계
+  const needSec = TOTAL_VIDEO * 60 / speed;
+  const availSec = DAYS.reduce((s,d)=>s+d.min,0) * 60;
+  const spareSec = days.reduce((s,d)=>s+d.spareSec,0);
+  const leftVideoMin = leftover.reduce((s,it)=>s+(it.to-it.from),0);
+  const leftRealSec = leftVideoMin * 60 / speed;
+  document.getElementById("stats").innerHTML = `
+    <div class="stat"><div class="label">필요 시간 (${speed}×)</div><div class="value">${fmt(needSec)}</div></div>
+    <div class="stat"><div class="label">가용 시간</div><div class="value">${fmt(availSec)}</div></div>
+    <div class="stat"><div class="label">17일 이후 잔여</div><div class="value">${leftover.length ? fmt(leftRealSec) : "없음 🎉"}</div></div>
+    <div class="stat"><div class="label">계획 내 빈 시간</div><div class="value">${fmt(spareSec)}</div></div>`;
+
+  // 안내문
+  const emptyDays = days.filter(d => !d.items.length).map(d => d.date);
+  let notice;
+  if (leftover.length){
+    notice = `<div class="notice warn">⚠️ ${speed}× 기준 계획 7일로 부족 — <b>${leftover[0].lec.n}강${leftover.length>1?`~${leftover[leftover.length-1].lec.n}강`:""} (실제 약 ${fmt(leftRealSec)})</b>이 8/18 이후로 넘어가요.</div>`;
+  } else {
+    const doneDay = days.filter(d => d.items.length).pop();
+    const lastN = LECS[LECS.length-1].n;
+    notice = `<div class="notice ok">✅ ${speed}× 기준 <b>${doneDay.date}에 ${lastN}강까지 완주!</b>${emptyDays.length ? ` 완전히 비는 날: <b>${emptyDays.join(", ")}</b> —` : ""} 빈 시간 총 <b>${fmt(spareSec)}</b>은 복습이나 다음 업데이트 강의 몫으로 쓰면 돼요.</div>`;
+  }
+  document.getElementById("notice").innerHTML = notice;
+
+  // 날짜 카드
+  let html = days.map(d => {
+    const usedSec = d.min*60 - d.spareSec + d.overSec;
+    let fill;
+    if (!d.items.length) fill = `<span class="spare">완전히 빈 날 (${fmt(d.min*60)} 여유)</span>`;
+    else if (d.overSec > 30) fill = `${fmt(usedSec)} · <span class="over">${fmtMin(d.overSec)} 초과</span>`;
+    else if (d.spareSec > 30) fill = `${fmt(usedSec)} · <span class="spare">여유 ${fmtMin(d.spareSec)}</span>`;
+    else fill = `<span class="full">${fmt(usedSec)} — 꽉 참</span>`;
+    const body = d.items.length
+      ? `<table>${d.items.map(rowHTML).join("")}${d.spareSec > 30 ? `<tr class="freerow"><td class="num">—</td><td class="title">남는 시간 (다음 강의 대기 또는 복습)</td><td class="dur">${fmtMin(d.spareSec)}</td></tr>` : ""}</table>`
+      : `<table><tr class="freerow"><td class="num">🎉</td><td class="title">배정된 강의 없음 — 통째로 비는 날</td><td class="dur">${fmtMin(d.min*60)}</td></tr></table>`;
+    return `<div class="day${d.items.length ? "" : " emptyday"}"><div class="day-head"><span class="date">${d.date}</span><span class="budget">가용 ${fmt(d.min*60)}</span><span class="fill">${fill}</span></div>${body}</div>`;
+  }).join("");
+
+  if (leftover.length){
+    html += `<div class="day overflow"><div class="day-head"><span class="date">📌 8/18 이후 잔여</span><span class="fill"><span class="over">실제 약 ${fmt(leftRealSec)}</span></span></div><table>${leftover.map(rowHTML).join("")}</table></div>`;
+  }
+  document.getElementById("days").innerHTML = html;
+}
+
+function setSpeed(s){ speed = s; render(); }
+document.getElementById("splitOn").onclick  = () => { split = true;  render(); };
+document.getElementById("splitOff").onclick = () => { split = false; render(); };
+render();
+</script>
+</body>
+</html>
