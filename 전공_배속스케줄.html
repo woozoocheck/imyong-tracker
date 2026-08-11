@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>전공국어 18~79강 스케줄 (8/11~8/17) · 배속 필터판</title>
+<title>전공국어 진도 스케줄 · 배속 플래너</title>
 <style>
   :root {
     --bg: #f6f7fb; --card: #ffffff; --ink: #1f2430; --sub: #6b7280;
@@ -16,29 +16,64 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif;
-    background: var(--bg); color: var(--ink); padding: 32px 16px 64px;
+    background: var(--bg); color: var(--ink); padding: 20px 14px 64px;
   }
   .wrap { max-width: 880px; margin: 0 auto; }
-  h1 { font-size: 26px; margin-bottom: 6px; }
-  .subtitle { color: var(--sub); font-size: 14px; margin-bottom: 20px; line-height: 1.6; }
+  .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .backbtn {
+    font-size: 13px; font-weight: 700; color: var(--accent); text-decoration: none;
+    background: var(--accent-soft); padding: 8px 14px; border-radius: 999px; white-space: nowrap;
+  }
+  h1 { font-size: 24px; margin-bottom: 6px; }
+  .subtitle { color: var(--sub); font-size: 14px; margin-bottom: 18px; line-height: 1.6; }
 
   .filters {
     background: var(--card); border: 1px solid var(--line); border-radius: 14px;
-    padding: 16px 18px; margin-bottom: 18px; position: sticky; top: 8px; z-index: 10;
+    padding: 14px 16px; margin-bottom: 18px;
     box-shadow: 0 4px 14px rgba(31,36,48,.06);
   }
   .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
   .filter-row + .filter-row { margin-top: 10px; }
-  .filter-label { font-size: 13px; font-weight: 700; color: var(--sub); width: 64px; }
+  .filter-label { font-size: 13px; font-weight: 700; color: var(--sub); min-width: 58px; }
   .chip {
     border: 1px solid var(--line); background: #fff; color: var(--ink);
-    border-radius: 99px; padding: 6px 13px; font-size: 13px; font-weight: 600;
+    border-radius: 99px; padding: 6px 12px; font-size: 13px; font-weight: 600;
     cursor: pointer; transition: all .12s;
   }
   .chip:hover { border-color: var(--accent); color: var(--accent); }
   .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
   .chip.base.on { background: var(--ink); border-color: var(--ink); }
   .chip small { font-weight: 500; opacity: .75; }
+  select.startsel {
+    border: 1px solid var(--line); border-radius: 10px; padding: 7px 10px;
+    font-size: 13px; font-weight: 600; background: #fff; color: var(--ink); max-width: 100%;
+  }
+
+  .dayeditor { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 12px; }
+  .dayeditor h3 { font-size: 14px; margin-bottom: 4px; }
+  .dayeditor .hint { font-size: 12px; color: var(--sub); margin-bottom: 10px; line-height: 1.6; }
+  .dayrow { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; flex-wrap: wrap; }
+  .dayrow input[type=date] {
+    border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px;
+    font-size: 14px; font-family: inherit; background: #fff;
+  }
+  .dayrow .hourbox { display: flex; align-items: center; gap: 5px; }
+  .dayrow input[type=number] {
+    width: 64px; border: 1px solid var(--line); border-radius: 10px; padding: 7px 9px;
+    font-size: 14px; font-family: inherit; text-align: right; background: #fff;
+  }
+  .dayrow .unit { font-size: 13px; color: var(--sub); }
+  .dayrow .wk { font-size: 13px; font-weight: 700; color: var(--accent); width: 34px; }
+  .delbtn {
+    border: 0; background: #fee2e2; color: #b91c1c; border-radius: 8px;
+    width: 30px; height: 30px; font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+  .editor-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .addbtn, .resetbtn {
+    border: 0; border-radius: 10px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer;
+  }
+  .addbtn { background: var(--accent); color: #fff; }
+  .resetbtn { background: var(--line); color: var(--ink); }
 
   .summary { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
   .stat {
@@ -65,20 +100,17 @@
   .fill .spare { color: var(--free); }
 
   table { width: 100%; border-collapse: collapse; }
-  td { padding: 9px 18px; font-size: 14px; border-top: 1px solid var(--line); vertical-align: top; }
+  td { padding: 9px 16px; font-size: 14px; border-top: 1px solid var(--line); vertical-align: top; }
   tr:first-child td { border-top: none; }
-  td.num { width: 56px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+  td.num { width: 54px; font-weight: 700; color: var(--accent); white-space: nowrap; }
   td.dur { width: 84px; text-align: right; color: var(--sub); white-space: nowrap; }
   td.title { line-height: 1.5; }
   tr.split { background: var(--split-bg); }
   tr.split td.num { color: var(--split); }
-  tr.future { background: var(--future-bg); }
-  tr.future td.num { color: var(--future); }
   tr.freerow td { color: var(--free); font-weight: 600; background: var(--free-bg); }
   .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
   .tag.cut { background: var(--split); color: #fff; }
   .tag.cont { background: #fff; color: var(--split); border: 1px solid var(--split); }
-  .tag.future { background: var(--future); color: #fff; }
 
   .day.emptyday .day-head { background: var(--free-bg); }
   .day.emptyday .day-head .date { color: var(--free); }
@@ -95,9 +127,12 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>📚 전공국어 18~79강 스케줄 <span style="font-size:16px;color:var(--accent)">· 배속 필터판</span></h1>
-  <p class="subtitle">2026. 8. 11.(화) ~ 8. 17.(월) · 모의고사 10강 제외한 52강 (영상 총 50시간 25분)<br>
-  78·79강은 모의고사 6회 해설로 확인되어 제외 · 표의 「분」은 영상 기준, 합계는 실제 소요시간</p>
+  <div class="topbar">
+    <a class="backbtn" href="index.html">← 진도판으로</a>
+  </div>
+  <h1>📚 전공국어 진도 스케줄 <span style="font-size:15px;color:var(--accent)">· 배속 플래너</span></h1>
+  <p class="subtitle">모의고사 제외 52강 (18~77강, 영상 총 50시간 25분) · 표의 「분」은 영상 기준, 합계는 실제 소요시간<br>
+  날짜·시간·시작 강의를 바꾸면 스케줄이 바로 다시 짜지고, 설정은 이 기기에 자동 저장돼요.</p>
 
   <div class="filters">
     <div class="filter-row">
@@ -108,6 +143,20 @@
       <span class="filter-label">이어듣기</span>
       <button class="chip" id="splitOn">켬 <small>(강의를 날짜 경계에서 끊음)</small></button>
       <button class="chip" id="splitOff">끔 <small>(통강의만)</small></button>
+    </div>
+    <div class="filter-row">
+      <span class="filter-label">시작 강의</span>
+      <select class="startsel" id="startSel"></select>
+      <span style="font-size:12px;color:var(--sub)">← 놓쳐서 밀렸으면 지금 들을 차례를 고르세요</span>
+    </div>
+    <div class="dayeditor">
+      <h3>🗓️ 공부 날짜 · 가용 시간</h3>
+      <div class="hint">날짜를 추가/삭제하고 그날 쓸 수 있는 시간을 넣으면 아래 스케줄이 쫙 다시 나와요. (0.5시간 단위)</div>
+      <div id="dayRows"></div>
+      <div class="editor-actions">
+        <button class="addbtn" id="addDay">＋ 날짜 추가</button>
+        <button class="resetbtn" id="resetPlan">기본값 복원 (8/11~17)</button>
+      </div>
     </div>
   </div>
 
@@ -138,7 +187,7 @@
     · 이어듣기 켬: 하루 시간이 다 차면 그 지점(영상 분)에서 끊고 다음 날 이어듣기. 남은 꼬리가 실제 10분 미만이면 그냥 끝까지 봄(약간 초과 허용).<br>
     · 이어듣기 끔: 통강의만 배치 → 각 날에 자투리 여유가 남고 전체 진도가 뒤로 밀림.<br>
     · 끊는 지점은 계산상 기준이라 근처 소단원 끝에서 ±2~3분 조절해도 지장 없음.<br>
-    · 78·79강은 8/14 업데이트로 공개 확인 — 모의고사 6회 해설이라 제외 목록으로 이동.
+    · 설정은 이 브라우저(localStorage)에만 저장 — 기기를 바꾸면 다시 입력해야 해요.
   </div>
 </div>
 
@@ -196,35 +245,29 @@ const LECS = [
   [75,47,"[현대소설] 평가원 지문(고1) 프레임 분석 11~14"],
   [76,47,"[현대소설] 평가원 지문(고1) 프레임 분석 15~18"],
   [77,35,"[현대소설] 평가원 지문(고1) 프레임 분석 19~20"],
-].map(([n,dur,title,est]) => ({n,dur,title,est:!!est}));
+].map(([n,dur,title]) => ({n,dur,title}));
 
-const DAYS = [
-  {date:"8/11 (화)", min:180},
-  {date:"8/12 (수)", min:480},
-  {date:"8/13 (목)", min:480},
-  {date:"8/14 (금)", min:480},
-  {date:"8/15 (토)", min:600},
-  {date:"8/16 (일)", min:600},
-  {date:"8/17 (월)", min:300},
-];
 const SPEEDS = [1.0,1.05,1.1,1.15,1.2,1.25,1.3,1.35,1.4];
-const TOTAL_VIDEO = LECS.reduce((s,l)=>s+l.dur,0);
+const DEFAULT_DAYS = [
+  {d:"2026-08-11", h:3},{d:"2026-08-12", h:8},{d:"2026-08-13", h:8},
+  {d:"2026-08-14", h:8},{d:"2026-08-15", h:10},{d:"2026-08-16", h:10},{d:"2026-08-17", h:5},
+];
+const WEEKDAYS = ["일","월","화","수","목","금","토"];
 
-let speed = 1.0, split = true;
-
-function fmt(sec){
-  const m = Math.round(sec/60);
-  return Math.floor(m/60) + "h " + String(m%60).padStart(2,"0") + "m";
-}
+function parseD(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function fmtDate(s){ const dt = parseD(s); return `${dt.getMonth()+1}/${dt.getDate()} (${WEEKDAYS[dt.getDay()]})`; }
+function fmt(sec){ const m = Math.round(sec/60); return Math.floor(m/60) + "h " + String(m%60).padStart(2,"0") + "m"; }
 function fmtMin(sec){ return Math.round(sec/60) + "분"; }
 
-function computeSchedule(){
-  const days = DAYS.map(d => ({...d, items: [], spareSec: 0, overSec: 0}));
-  let i = 0, offset = 0; // offset: 이미 본 영상 분
-  for (const day of days){
-    let cap = day.min * 60; // 남은 실제 초
-    while (i < LECS.length && cap > 30){
-      const lec = LECS[i];
+// 스케줄러: 시작 강의부터, 날짜별 가용시간에 순서대로 배치 (split=이어듣기)
+function computeSchedule({speed, split, startN, days}){
+  const lecs = LECS.filter(l => l.n >= startN);
+  const out = days.map(d => ({...d, items: [], spareSec: 0, overSec: 0}));
+  let i = 0, offset = 0;
+  for (const day of out){
+    let cap = day.h * 3600;
+    while (i < lecs.length && cap > 30){
+      const lec = lecs[i];
       const remVideo = lec.dur - offset;
       const remReal = remVideo * 60 / speed;
       if (remReal <= cap + 1){
@@ -232,7 +275,7 @@ function computeSchedule(){
         cap -= remReal; i++; offset = 0;
       } else if (!split){
         break;
-      } else if (remReal - cap < 600){ // 꼬리가 실제 10분 미만이면 끝까지 (초과 허용)
+      } else if (remReal - cap < 600){
         day.items.push({lec, from: offset, to: lec.dur});
         cap -= remReal; i++; offset = 0;
         break;
@@ -248,82 +291,141 @@ function computeSchedule(){
     day.overSec = Math.max(0, -cap);
   }
   const leftover = [];
-  if (i < LECS.length){
-    leftover.push({lec: LECS[i], from: offset, to: LECS[i].dur});
-    for (let j = i+1; j < LECS.length; j++) leftover.push({lec: LECS[j], from: 0, to: LECS[j].dur});
+  if (i < lecs.length){
+    leftover.push({lec: lecs[i], from: offset, to: lecs[i].dur});
+    for (let j = i+1; j < lecs.length; j++) leftover.push({lec: lecs[j], from: 0, to: lecs[j].dur});
   }
-  return {days, leftover};
+  return {days: out, leftover, lecs};
 }
+
+// ---------- 상태 (localStorage 저장) ----------
+const KEY = "jeongong-speedplan-v1";
+function defaultState(){ return {speed: 1.0, split: true, startN: 18, days: DEFAULT_DAYS.map(x => ({...x}))}; }
+function loadState(){
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && Array.isArray(s.days) && s.days.length && typeof s.speed === "number") return s;
+  } catch(e){}
+  return defaultState();
+}
+let state = loadState();
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function sortDays(){ state.days.sort((a,b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0); }
 
 function rowHTML(it){
   const {lec, from, to} = it;
   const partial = from > 0 || to < lec.dur;
-  const cls = [partial ? "split" : "", lec.est ? "future" : ""].join(" ").trim();
   let tags = "";
   if (from > 0) tags += ` <span class="tag cont">${from}분~ 이어듣기</span>`;
   if (to < lec.dur) tags += ` <span class="tag cut">~${to}분까지</span>`;
-  if (lec.est && !partial) tags += ` <span class="tag future">추정</span>`;
   const durTxt = partial ? `${to-from}/${lec.dur}분` : `${lec.dur}분`;
-  return `<tr class="${cls}"><td class="num">${lec.n}강</td><td class="title">${lec.title}${tags}</td><td class="dur">${durTxt}</td></tr>`;
+  return `<tr class="${partial ? "split" : ""}"><td class="num">${lec.n}강</td><td class="title">${lec.title}${tags}</td><td class="dur">${durTxt}</td></tr>`;
 }
 
 function render(){
-  const {days, leftover} = computeSchedule();
+  sortDays();
+  const {days, leftover, lecs} = computeSchedule(state);
 
   // 필터 칩
   document.getElementById("speedChips").innerHTML = SPEEDS.map(s =>
-    `<button class="chip ${s===1.0?'base ':''}${s===speed?'on':''}" onclick="setSpeed(${s})">${s.toFixed(2).replace(/0$/,'')}×${s===1.0?' <small>정배</small>':''}</button>`
+    `<button class="chip ${s===1.0?'base ':''}${s===state.speed?'on':''}" onclick="setSpeed(${s})">${s.toFixed(2).replace(/0$/,'')}×${s===1.0?' <small>정배</small>':''}</button>`
   ).join(" ");
-  document.getElementById("splitOn").className  = "chip" + (split ? " on" : "");
-  document.getElementById("splitOff").className = "chip" + (!split ? " on" : "");
+  document.getElementById("splitOn").className  = "chip" + (state.split ? " on" : "");
+  document.getElementById("splitOff").className = "chip" + (!state.split ? " on" : "");
+
+  // 시작 강의 셀렉트
+  document.getElementById("startSel").innerHTML = LECS.map(l =>
+    `<option value="${l.n}" ${l.n===state.startN?"selected":""}>${l.n}강부터${l.n===18?" (처음부터)":""}</option>`
+  ).join("");
+
+  // 날짜 편집 UI
+  document.getElementById("dayRows").innerHTML = state.days.map((d, i) => `
+    <div class="dayrow">
+      <span class="wk">${WEEKDAYS[parseD(d.d).getDay()]}</span>
+      <input type="date" value="${d.d}" onchange="updDay(${i},'d',this.value)">
+      <span class="hourbox"><input type="number" min="0" max="24" step="0.5" value="${d.h}" onchange="updDay(${i},'h',this.value)"><span class="unit">시간</span></span>
+      <button class="delbtn" onclick="delDay(${i})" title="이 날짜 삭제">✕</button>
+    </div>`).join("");
 
   // 통계
-  const needSec = TOTAL_VIDEO * 60 / speed;
-  const availSec = DAYS.reduce((s,d)=>s+d.min,0) * 60;
+  const totalVideo = lecs.reduce((s,l)=>s+l.dur,0);
+  const needSec = totalVideo * 60 / state.speed;
+  const availSec = state.days.reduce((s,d)=>s+d.h,0) * 3600;
   const spareSec = days.reduce((s,d)=>s+d.spareSec,0);
   const leftVideoMin = leftover.reduce((s,it)=>s+(it.to-it.from),0);
-  const leftRealSec = leftVideoMin * 60 / speed;
+  const leftRealSec = leftVideoMin * 60 / state.speed;
   document.getElementById("stats").innerHTML = `
-    <div class="stat"><div class="label">필요 시간 (${speed}×)</div><div class="value">${fmt(needSec)}</div></div>
+    <div class="stat"><div class="label">남은 강의 (${state.startN}강~)</div><div class="value">${lecs.length}강</div></div>
+    <div class="stat"><div class="label">필요 시간 (${state.speed}×)</div><div class="value">${fmt(needSec)}</div></div>
     <div class="stat"><div class="label">가용 시간</div><div class="value">${fmt(availSec)}</div></div>
-    <div class="stat"><div class="label">17일 이후 잔여</div><div class="value">${leftover.length ? fmt(leftRealSec) : "없음 🎉"}</div></div>
+    <div class="stat"><div class="label">계획 이후 잔여</div><div class="value">${leftover.length ? fmt(leftRealSec) : "없음 🎉"}</div></div>
     <div class="stat"><div class="label">계획 내 빈 시간</div><div class="value">${fmt(spareSec)}</div></div>`;
 
   // 안내문
-  const emptyDays = days.filter(d => !d.items.length).map(d => d.date);
+  const emptyDays = days.filter(d => !d.items.length).map(d => fmtDate(d.d));
   let notice;
-  if (leftover.length){
-    notice = `<div class="notice warn">⚠️ ${speed}× 기준 계획 7일로 부족 — <b>${leftover[0].lec.n}강${leftover.length>1?`~${leftover[leftover.length-1].lec.n}강`:""} (실제 약 ${fmt(leftRealSec)})</b>이 8/18 이후로 넘어가요.</div>`;
+  if (!lecs.length){
+    notice = `<div class="notice ok">✅ 시작 강의가 마지막 강의보다 뒤예요 — 남은 강의가 없어요!</div>`;
+  } else if (leftover.length){
+    const first = leftover[0].lec.n, last = leftover[leftover.length-1].lec.n;
+    notice = `<div class="notice warn">⚠️ ${state.speed}× 기준 계획한 날짜로 부족 — <b>${first}강${last!==first?`~${last}강`:""} (실제 약 ${fmt(leftRealSec)})</b>이 계획 밖으로 남아요. 날짜를 추가하거나 배속을 올려보세요.</div>`;
   } else {
     const doneDay = days.filter(d => d.items.length).pop();
-    const lastN = LECS[LECS.length-1].n;
-    notice = `<div class="notice ok">✅ ${speed}× 기준 <b>${doneDay.date}에 ${lastN}강까지 완주!</b>${emptyDays.length ? ` 완전히 비는 날: <b>${emptyDays.join(", ")}</b> —` : ""} 빈 시간 총 <b>${fmt(spareSec)}</b>은 복습이나 다음 업데이트 강의 몫으로 쓰면 돼요.</div>`;
+    const lastN = lecs[lecs.length-1].n;
+    notice = `<div class="notice ok">✅ ${state.speed}× 기준 <b>${fmtDate(doneDay.d)}에 ${lastN}강까지 완주!</b>${emptyDays.length ? ` 완전히 비는 날: <b>${emptyDays.join(", ")}</b> —` : ""} 빈 시간 총 <b>${fmt(spareSec)}</b>은 복습이나 다음 업데이트 강의 몫으로 쓰면 돼요.</div>`;
   }
   document.getElementById("notice").innerHTML = notice;
 
   // 날짜 카드
   let html = days.map(d => {
-    const usedSec = d.min*60 - d.spareSec + d.overSec;
+    const usedSec = d.h*3600 - d.spareSec + d.overSec;
     let fill;
-    if (!d.items.length) fill = `<span class="spare">완전히 빈 날 (${fmt(d.min*60)} 여유)</span>`;
+    if (!d.items.length) fill = `<span class="spare">완전히 빈 날 (${fmt(d.h*3600)} 여유)</span>`;
     else if (d.overSec > 30) fill = `${fmt(usedSec)} · <span class="over">${fmtMin(d.overSec)} 초과</span>`;
     else if (d.spareSec > 30) fill = `${fmt(usedSec)} · <span class="spare">여유 ${fmtMin(d.spareSec)}</span>`;
     else fill = `<span class="full">${fmt(usedSec)} — 꽉 참</span>`;
     const body = d.items.length
-      ? `<table>${d.items.map(rowHTML).join("")}${d.spareSec > 30 ? `<tr class="freerow"><td class="num">—</td><td class="title">남는 시간 (다음 강의 대기 또는 복습)</td><td class="dur">${fmtMin(d.spareSec)}</td></tr>` : ""}</table>`
-      : `<table><tr class="freerow"><td class="num">🎉</td><td class="title">배정된 강의 없음 — 통째로 비는 날</td><td class="dur">${fmtMin(d.min*60)}</td></tr></table>`;
-    return `<div class="day${d.items.length ? "" : " emptyday"}"><div class="day-head"><span class="date">${d.date}</span><span class="budget">가용 ${fmt(d.min*60)}</span><span class="fill">${fill}</span></div>${body}</div>`;
+      ? `<table>${d.items.map(rowHTML).join("")}${d.spareSec > 30 ? `<tr class="freerow"><td class="num">—</td><td class="title">남는 시간 (복습 또는 다음 강의 대기)</td><td class="dur">${fmtMin(d.spareSec)}</td></tr>` : ""}</table>`
+      : `<table><tr class="freerow"><td class="num">🎉</td><td class="title">배정된 강의 없음 — 통째로 비는 날</td><td class="dur">${fmtMin(d.h*3600)}</td></tr></table>`;
+    return `<div class="day${d.items.length ? "" : " emptyday"}"><div class="day-head"><span class="date">${fmtDate(d.d)}</span><span class="budget">가용 ${fmt(d.h*3600)}</span><span class="fill">${fill}</span></div>${body}</div>`;
   }).join("");
 
   if (leftover.length){
-    html += `<div class="day overflow"><div class="day-head"><span class="date">📌 8/18 이후 잔여</span><span class="fill"><span class="over">실제 약 ${fmt(leftRealSec)}</span></span></div><table>${leftover.map(rowHTML).join("")}</table></div>`;
+    const leftVideoMin2 = leftover.reduce((s,it)=>s+(it.to-it.from),0);
+    html += `<div class="day overflow"><div class="day-head"><span class="date">📌 계획 이후 잔여</span><span class="fill"><span class="over">실제 약 ${fmt(leftVideoMin2*60/state.speed)}</span></span></div><table>${leftover.map(rowHTML).join("")}</table></div>`;
   }
   document.getElementById("days").innerHTML = html;
 }
 
-function setSpeed(s){ speed = s; render(); }
-document.getElementById("splitOn").onclick  = () => { split = true;  render(); };
-document.getElementById("splitOff").onclick = () => { split = false; render(); };
+function setSpeed(s){ state.speed = s; save(); render(); }
+window.updDay = (i, field, v) => {
+  if (field === "d"){ if (!v) return; state.days[i].d = v; }
+  else { const h = Math.max(0, Math.min(24, parseFloat(v) || 0)); state.days[i].h = h; }
+  save(); render();
+};
+window.delDay = (i) => { state.days.splice(i, 1); save(); render(); };
+document.getElementById("addDay").onclick = () => {
+  sortDays();
+  let next;
+  if (state.days.length){
+    const last = parseD(state.days[state.days.length-1].d);
+    last.setDate(last.getDate() + 1);
+    next = `${last.getFullYear()}-${String(last.getMonth()+1).padStart(2,"0")}-${String(last.getDate()).padStart(2,"0")}`;
+  } else {
+    const t = new Date();
+    next = `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,"0")}-${String(t.getDate()).padStart(2,"0")}`;
+  }
+  state.days.push({d: next, h: 8});
+  save(); render();
+};
+document.getElementById("resetPlan").onclick = () => {
+  if (confirm("날짜·시간·시작 강의를 기본값(8/11~17, 18강부터)으로 되돌릴까요?")){
+    state = defaultState(); save(); render();
+  }
+};
+document.getElementById("startSel").onchange = (e) => { state.startN = Number(e.target.value); save(); render(); };
+document.getElementById("splitOn").onclick  = () => { state.split = true;  save(); render(); };
+document.getElementById("splitOff").onclick = () => { state.split = false; save(); render(); };
 render();
 </script>
 </body>
